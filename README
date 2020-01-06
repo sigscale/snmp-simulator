@@ -1,0 +1,23 @@
+# SigScale SNMP Collector (snmp_simulator)
+
+## Prerequisites
+	Install erlang(>18)
+	$ sudo apt install erlang
+
+## Building
+	$ mkdir ../snmp_simulator.build  (create build directory)
+	$ cd ../snmp_simulator.build     (change working directory for build)
+	$ ../snmp_simulator/configure    (creates Makefiles)
+	$ make                           (builds entire package)
+	$ make check                     (run dialyzer and common_test)
+
+## Installing
+	$ sudo make install         (installs embedded application in system)
+
+## Cleaning
+	$ make clean                (removes files created with make)
+	$ make distclean            (removes files created with configure also)
+
+## Options
+	$ ../snmp_simulator/configure --enable-debug
+

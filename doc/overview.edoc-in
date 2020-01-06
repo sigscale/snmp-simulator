@@ -1,0 +1,23 @@
+@copyright 2020 SigScale Global Inc.
+@version %VERSION%
+@title %DESCRIPTION%
+@doc This application implements an SNMP agent simulator for load testing.
+
+==Introduction==
+
+==Installation==
+Before starting the application for the first time, {@link //mnesia/mnesia. mnesia}
+should be initialized. Create a schema and start mnesia on all nodes
+where the application {@link //snmp_simulator. snmp_simulator} application will run.
+
+The following command will initialize {@link //snmp_simulator. snmp_simulator}.
+
+   ```
+   (snmp_simulator@h)1> snmp_simulator_app:install().
+   {ok, []}
+   '''
+
+==Operation==
+
+==Configuration==
+
