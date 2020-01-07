@@ -3,5 +3,5 @@
 ##
 ## Process this file with automake to produce Makefile.in
 
-einclude_DATA = 
+einclude_DATA = snmp_simulator.hrl
 
