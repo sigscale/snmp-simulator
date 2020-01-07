@@ -3,7 +3,7 @@
 ##
 ## Process this file with automake to produce Makefile.in
 
-SUBDIRS = include ebin doc
+SUBDIRS = include ebin mibs priv doc
 
 .PHONY: release
 release: $(PACKAGE_VERSION).tar.gz

@@ -47,12 +47,18 @@ appdir=$ERLANG_INSTALL_LIB_DIR/$PACKAGE_NAME-$PACKAGE_VERSION
 erldir=$ERLANG_INSTALL_LIB_DIR/$PACKAGE_NAME-$PACKAGE_VERSION/src
 beamdir=$ERLANG_INSTALL_LIB_DIR/$PACKAGE_NAME-$PACKAGE_VERSION/ebin
 eincludedir=$ERLANG_INSTALL_LIB_DIR/$PACKAGE_NAME-$PACKAGE_VERSION/include
+privdir=$ERLANG_INSTALL_LIB_DIR/$PACKAGE_NAME-$PACKAGE_VERSION/priv
+mibsdir=$ERLANG_INSTALL_LIB_DIR/$PACKAGE_NAME-$PACKAGE_VERSION/mibs
+emibdir=$ERLANG_INSTALL_LIB_DIR/$PACKAGE_NAME-$PACKAGE_VERSION/priv/mibs
 docdir=$ERLANG_INSTALL_LIB_DIR/$PACKAGE_NAME-$PACKAGE_VERSION/doc
 reldir=$ERLANG_INSTALL_LIB_DIR/../releases
 AC_SUBST(appdir)
 AC_SUBST(erldir)
 AC_SUBST(beamdir)
 AC_SUBST(eincludedir)
+AC_SUBST(privdir)
+AC_SUBST(mibsdir)
+AC_SUBST(emibdir)
 AC_SUBST(reldir)
 
 
@@ -68,6 +74,7 @@ AC_ERLANG_CHECK_LIB([asn1], [], [AC_MSG_ERROR([asn1 was not found!])])
 AC_ERLANG_CHECK_LIB([compiler], [], [AC_MSG_ERROR([compiler was not found!])])
 AC_ERLANG_CHECK_LIB([snmp], [], [AC_MSG_ERROR([snmp was not found!])])
 AC_ERLANG_CHECK_LIB([runtime_tools], [], [AC_MSG_ERROR([runtime_tools was not found!])])
+AC_ERLANG_CHECK_LIB([sigscale_mibs], [], [AC_MSG_ERROR([sigscale_mibs was not found!])])
 
 
 ##
@@ -90,5 +97,6 @@ AC_ERLANG_CHECK_LIB([runtime_tools], [], [AC_MSG_ERROR([runtime_tools was not fo
 ##
 
 AC_OUTPUT([Makefile src/Makefile ebin/Makefile doc/Makefile
+		mibs/Makefile priv/mibs/Makefile
 		$PACKAGE_NAME.rel sys.config])
 
