@@ -36,6 +36,8 @@
 
 -include("snmp_simulator.hrl").
 
+-record(state, {}).
+
 %%----------------------------------------------------------------------
 %%  The snmp_simulator_app aplication callbacks
 %%----------------------------------------------------------------------
@@ -62,7 +64,6 @@ start(normal = _StartType, _Args) ->
 							{reason, Reason}, {module, ?MODULE}]),
 					{error, Reason}
 			end;
-					{error, Reason}
 		{error, Reason} ->
 			{error, Reason}
 	end.
