@@ -3,7 +3,7 @@
 ##
 ## Process this file with automake to produce Makefile.in
 
-ERLCFLAGS +=  +'{group_check, false}'
+ERLCFLAGS +=  +'{group_check, false}' +'{db, mnesia}'
 
 emib_DATA = ITU-ALARM-TC-MIB.bin \
 		IANA-ITU-ALARM-TC-MIB.bin \
