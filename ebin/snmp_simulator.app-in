@@ -1,0 +1,13 @@
+{application, %APP_NAME%,
+	[{description, "SigScale SNMP Agent Simulator"},
+	{vsn, "%APP_VERSION%"},
+	{modules,
+			[snmp_simulator_app]},
+	{registered,
+			[]},
+	{applications, []},
+	{env,
+			[{mib_dir, "mibs"},
+			{bin_dir, "priv/mibs"}]},
+	{mod, {snmp_simulator_app, []}}]}.
+
