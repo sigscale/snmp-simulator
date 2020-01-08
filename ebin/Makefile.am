@@ -7,7 +7,8 @@ appdir = $(beamdir)
 app_DATA = snmp_simulator.app
 EXTRA_DIST = snmp_simulator.app
 
-beam_DATA = snmp_simulator_app.beam
+beam_DATA = snmp_simulator_app.beam \
+		snmp_simulator_mib.beam
 
 %.beam:$(top_srcdir)/src/%.erl	$(top_srcdir)/include/snmp_simulator.hrl
 	$(ERLC) $(ERLCFLAGS) -I $(top_srcdir)/include -I $(top_builddir)/include $<

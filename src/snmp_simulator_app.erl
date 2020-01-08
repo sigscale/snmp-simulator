@@ -52,23 +52,6 @@
 		Reason :: term().
 %% @doc Starts the application processes.
 start(normal = _StartType, _Args) ->
-	{ok, MibDir} = application:get_env(mib_dir),
-	{ok, BinDir} = application:get_env(bin_dir),
-	case create_dirs(MibDir, BinDir) of
-		ok ->
-			case catch load_all_mibs(MibDir, BinDir) of
-				ok ->
-					start1(normal, []);
-				{error, Reason} ->
-					error_logger:error_report(["SNMP Agent application failed to start",
-							{reason, Reason}, {module, ?MODULE}]),
-					{error, Reason}
-			end;
-		{error, Reason} ->
-			{error, Reason}
-	end.
-%% @hidden
-start1(normal = _StartType, _Args) ->
 	Tables = [snmp_variables, alarmModelTable, alarmActiveTable,
 			alarmActiveVariableTable, alarmActiveStatsTable, alarmClearTable],
 	case mnesia:wait_for_tables(Tables, ?WAITFORTABLES) of
@@ -79,7 +62,7 @@ start1(normal = _StartType, _Args) ->
 				ok ->
 					start2();
 				{error, Reason} ->
-					error_logger:error_report(["SNMP Agent application failed to start",
+					error_logger:error_report(["SNMP agent simulator failed to start",
 							{reason, Reason}, {module, ?MODULE}]),
 						{error, Reason}
 			end;
@@ -88,6 +71,14 @@ start1(normal = _StartType, _Args) ->
 	end.
 %% @hidden
 start2() ->
+	case snmp_simulator:load_mib() of
+		ok ->
+			start3();
+		{error, Reason} ->
+			{error, Reason}
+	end.
+%% @hidden
+start3() ->
 	case supervisor:start_link(snmp_simulator_sup, []) of
 		{ok, TopSup} ->
 			{ok, TopSup};
@@ -380,30 +371,6 @@ install8(Nodes, Acc) ->
 install9(_Nodes, Acc) ->
 	{ok, Acc}.
 
--spec create_dirs(MibDir, BinDir) -> Result
-	when
-		MibDir :: string(),
-		BinDir :: string(),
-		Result :: ok | {error, Reason},
-		Reason :: term().
-%% @doc Create the MIB directory.
-create_dirs(MibDir, BinDir) ->
-	case file:make_dir(MibDir) of
-		ok ->
-			case file:make_dir(BinDir) of
-				ok ->
-					ok;
-				{error, eexist} ->
-					ok;
-				{error, Reason} ->
-					{error, Reason}
-			end;
-		{error, eexist} ->
-			ok;
-		{error, Reason} ->
-			{error, Reason}
-	end.
-
 -spec force(Tables) -> Result
 	when
 		Tables :: [TableName],
@@ -419,15 +386,5 @@ force([H | T]) ->
 			{error, ErrorDescription}
 		end;
 force([]) ->
-	ok.
-
--spec load_all_mibs(MibDir, BinDir) -> Result
-	when
-		MibDir :: string(),
-		BinDir :: string(),
-		Result :: ok | {error, Reason},
-		Reason :: term().
-%% @doc Load all required Mibs into the SNMP Agent.
-load_all_mibs(MibDir, BinDir) ->
 	ok.
 

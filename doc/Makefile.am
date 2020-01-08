@@ -3,7 +3,8 @@
 ##
 ## Process this file with automake to produce Makefile.in
 
-modhtml = snmp_simulator_app.html
+modhtml = snmp_simulator_app.html \
+		snmp_simulator_mib.html
 
 doc_DATA = overview.edoc $(modhtml) \
 		modules-frame.html overview-summary.html \
