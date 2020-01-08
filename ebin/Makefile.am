@@ -8,6 +8,9 @@ app_DATA = snmp_simulator.app
 EXTRA_DIST = snmp_simulator.app
 
 beam_DATA = snmp_simulator_app.beam \
+		snmp_simulator_sup.beam \
+		snmp_simulator_server.beam \
+		snmp_simulator.beam \
 		snmp_simulator_mib.beam
 
 %.beam:$(top_srcdir)/src/%.erl	$(top_srcdir)/include/snmp_simulator.hrl

@@ -71,7 +71,7 @@ start(normal = _StartType, _Args) ->
 	end.
 %% @hidden
 start2() ->
-	case snmp_simulator:load_mib() of
+	case snmp_simulator_mib:load() of
 		ok ->
 			start3();
 		{error, Reason} ->
