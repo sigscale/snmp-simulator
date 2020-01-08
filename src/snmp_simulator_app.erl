@@ -69,7 +69,8 @@ start(normal = _StartType, _Args) ->
 	end.
 %% @hidden
 start1(normal = _StartType, _Args) ->
-	Tables = [],
+	Tables = [snmp_variables, alarmModelTable, alarmActiveTable,
+			alarmActiveVariableTable, alarmActiveStatsTable, alarmClearTable],
 	case mnesia:wait_for_tables(Tables, ?WAITFORTABLES) of
 		ok ->
 			start2();
@@ -221,8 +222,163 @@ install1(Nodes) ->
 			{error, {Results, BadNodes}}
 	end.
 %% @hidden
-install2(_Nodes) ->
-	{ok, []}.
+install2(Nodes) ->
+	case mnesia:wait_for_tables([schema], ?WAITFORSCHEMA) of
+		ok ->
+			install3(Nodes, []);
+		{error, Reason} ->
+			error_logger:error_report([mnesia:error_description(Reason),
+				{error, Reason}]),
+			{error, Reason};
+		{timeout, Tables} ->
+			error_logger:error_report(["Timeout waiting for tables",
+					{tables, Tables}]),
+			{error, timeout}
+	end.
+%% @hidden
+install3(Nodes, Acc) ->
+	case mnesia:create_table(snmp_variables, [{disc_copies, Nodes}]) of
+		{atomic, ok} ->
+			error_logger:info_msg("Created new SNMP variables table.~n"),
+			install4(Nodes, [snmp_variables | Acc]);
+		{aborted, {not_active, _, Node} = Reason} ->
+			error_logger:error_report(["Mnesia not started on node",
+					{node, Node}]),
+			{error, Reason};
+		{aborted, {already_exists, snmp_variables}} ->
+			error_logger:info_msg("Found existing SNMP variables table.~n"),
+			install4(Nodes, [snmp_variables | Acc]);
+		{aborted, Reason} ->
+			error_logger:error_report([mnesia:error_description(Reason),
+				{error, Reason}]),
+			{error, Reason}
+	end.
+%% @hidden
+install4(Nodes, Acc) ->
+	Attributes = [alarmModelNotificationId, alarmModelVarbindIndex,
+			alarmModelVarbindValue, alarmModelDescription,
+			alarmModelSpecificPointer, alarmModelVarbindSubtree,
+			alarmModelResourcePrefix, alarmModelRowStatus],
+	case mnesia:create_table(alarmModelTable,
+			[{disc_copies, Nodes}, {attributes, Attributes},
+			{snmp, [{key, {string, integer, integer}}]}]) of
+		{atomic, ok} ->
+			error_logger:info_msg("Created new alarm model table.~n"),
+			install5(Nodes, [alarmModelTable | Acc]);
+		{aborted, {not_active, _, Node} = Reason} ->
+			error_logger:error_report(["Mnesia not started on node",
+					{node, Node}]),
+			{error, Reason};
+		{aborted, {already_exists, alarmModelTable}} ->
+			error_logger:info_msg("Found existing alarm model table.~n"),
+			install5(Nodes, [alarmModelTable | Acc]);
+		{aborted, Reason} ->
+			error_logger:error_report([mnesia:error_description(Reason),
+				{error, Reason}]),
+			{error, Reason}
+	end.
+%% @hidden
+install5(Nodes, Acc) ->
+	Attributes = [alarmActiveEngineID, alarmActiveEngineAddressType,
+		alarmActiveEngineAddress, alarmActiveContextName,
+		alarmActiveVariables, alarmActiveNotificationID,
+		alarmActiveResourceId, alarmActiveDescription,
+		alarmActiveLogPointers, alarmActiveModelPointer,
+		alarmActiveSpecificPointer],
+	case mnesia:create_table(alarmActiveTable,
+			[{ram_copies, Nodes}, {attributes, Attributes},
+			{snmp, [{key, {string, string, integer}}]}]) of
+		{atomic, ok} ->
+			error_logger:info_msg("Created new active alarm table.~n"),
+			install6(Nodes, [alarmActiveTable | Acc]);
+		{aborted, {not_active, _, Node} = Reason} ->
+			error_logger:error_report(["Mnesia not started on node",
+					{node, Node}]),
+			{error, Reason};
+		{aborted, {already_exists, alarmActiveTable}} ->
+			error_logger:info_msg("Found existing active alarm table.~n"),
+			install6(Nodes, [alarmActiveTable | Acc]);
+		{aborted, Reason} ->
+			error_logger:error_report([mnesia:error_description(Reason),
+				{error, Reason}]),
+			{error, Reason}
+	end.
+%% @hidden
+install6(Nodes, Acc) ->
+	Attributes = [alarmActiveVariableID, alarmActiveVariableValueType,
+			alarmActiveVariableCounter32Val, alarmActiveVariableUnsigned32Val,
+			alarmActiveVariableTimeTicksVal, alarmActiveVariableInteger32Val,
+			alarmActiveVariableOctetStringVal, alarmActiveVariableIpAddressVal,
+			alarmActiveVariableOidVal, alarmActiveVariableCounter64Val,
+			alarmActiveVariableOpaqueVal],
+	case mnesia:create_table(alarmActiveVariableTable,
+			[{ram_copies, Nodes}, {attributes, Attributes},
+			{snmp, [{key, {string, integer, integer}}]}]) of
+		{atomic, ok} ->
+			error_logger:info_msg("Created new active alarm variables table.~n"),
+			install7(Nodes, [alarmActiveVariableTable| Acc]);
+		{aborted, {not_active, _, Node} = Reason} ->
+			error_logger:error_report(["Mnesia not started on node",
+					{node, Node}]),
+			{error, Reason};
+		{aborted, {already_exists, alarmActiveVariableTable}} ->
+			error_logger:info_msg("Found existing active alarm variables table.~n"),
+			install7(Nodes, [alarmActiveVariableTable | Acc]);
+		{aborted, Reason} ->
+			error_logger:error_report([mnesia:error_description(Reason),
+				{error, Reason}]),
+			{error, Reason}
+	end.
+%% @hidden
+install7(Nodes, Acc) ->
+	Attributes = [alarmActiveStatsActiveCurrent, alarmActiveStatsActives,
+			alarmActiveStatsLastRaise, alarmActiveStatsLastClear],
+	case mnesia:create_table(alarmActiveStatsTable,
+			[{ram_copies, Nodes}, {attributes, Attributes},
+			{snmp, [{key, {string}}]}]) of
+		{atomic, ok} ->
+			error_logger:info_msg("Created new active alarm statistics table.~n"),
+			install8(Nodes, [alarmActiveStatsTable | Acc]);
+		{aborted, {not_active, _, Node} = Reason} ->
+			error_logger:error_report(["Mnesia not started on node",
+					{node, Node}]),
+			{error, Reason};
+		{aborted, {already_exists, alarmActiveStatsTable}} ->
+			error_logger:info_msg("Found existing active alarm statistics table.~n"),
+			install8(Nodes, [alarmActiveStatsTable | Acc]);
+		{aborted, Reason} ->
+			error_logger:error_report([mnesia:error_description(Reason),
+				{error, Reason}]),
+			{error, Reason}
+	end.
+%% @hidden
+install8(Nodes, Acc) ->
+	Attributes = [alarmClearDateAndTime, alarmClearEngineID,
+			alarmClearEngineAddressType, alarmClearEngineAddress,
+			alarmClearContextName, alarmClearNotificationID,
+			alarmClearResourceId, alarmClearLogIndex,
+			alarmClearModelPointer],
+	case mnesia:create_table(alarmClearTable,
+			[{ram_copies, Nodes}, {attributes, Attributes},
+			{snmp, [{key, {string, string, integer}}]}]) of
+		{atomic, ok} ->
+			error_logger:info_msg("Created new cleared alarm table.~n"),
+			install9(Nodes, [alarmClearTable | Acc]);
+		{aborted, {not_active, _, Node} = Reason} ->
+			error_logger:error_report(["Mnesia not started on node",
+					{node, Node}]),
+			{error, Reason};
+		{aborted, {already_exists, alarmClearTable}} ->
+			error_logger:info_msg("Found existing cleared alarm table.~n"),
+			install9(Nodes, [alarmClearTable | Acc]);
+		{aborted, Reason} ->
+			error_logger:error_report([mnesia:error_description(Reason),
+				{error, Reason}]),
+			{error, Reason}
+	end.
+%% @hidden
+install9(_Nodes, Acc) ->
+	{ok, Acc}.
 
 -spec create_dirs(MibDir, BinDir) -> Result
 	when
