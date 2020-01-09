@@ -19,15 +19,17 @@ check_DATA = .tree_ok
 		snmptranslate -M +$(top_srcdir)/mibs \
 			-m +ITU-ALARM-TC-MIB -Lo -Tp -IR ituAlarmTc; \
 		snmptranslate -M +$(top_srcdir)/mibs \
-			-m +IANAifType-MIB -Lo -Tp -IR ianaItuAlarmNumbers; \
+			-m +IANA-ITU-ALARM-TC-MIB -Lo -Tp -IR ianaItuAlarmNumbers; \
 		snmptranslate -M +$(top_srcdir)/mibs \
-			-m +IF-MIB -Lo -Tp -IR ianaifTyp; \
+			-m +IANAifType-MIB  -Lo -Tp -IR ianaifType; \
 		snmptranslate -M +$(top_srcdir)/mibs \
-			-m +RMON-MIB -Lo -Tp -IR ifMIB; \
+			-m +IF-MIB -Lo -Tp -IR ifMIB; \
 		snmptranslate -M +$(top_srcdir)/mibs \
-			-m RMON2-MIB -Lo -Tp -IR rmonMibModule; \
+			-m +RMON-MIB -Lo -Tp -IR rmonMibModule; \
 		snmptranslate -M +$(top_srcdir)/mibs \
-			-m ALARM-MIB -Lo -Tp -IR rmon -Lo -Tp -IR alarmMIB; \
+			-m RMON2-MIB -Lo -Tp -IR rmon; \
+		snmptranslate -M +$(top_srcdir)/mibs \
+			-m ALARM-MIB -Lo -Tp -IR alarmMIB; \
 		snmptranslate -M +$(top_srcdir)/mibs \
 			-m +ITU-ALARM-MIB -Lo -Tp -IR ituAlarmMIB; \
 	fi
