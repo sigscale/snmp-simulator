@@ -79,3 +79,11 @@
 		 ituAlarmAdditionalText :: string(),
 		 ituAlarmGenericModel = [0, 0] :: snmpa:oid()}).
 
+-record(ituAlarmActiveTable,
+		{key :: {AlarmListName :: string(),
+				AlarmActiveDateAndTime :: string(),
+				AlarmActiveIndex :: ?Unsigned32},
+		ItuAlarmActiveTrendIndication :: 1..3,
+		ItuAlarmActiveDetector :: snmpa:oid(),
+		ItuAlarmActiveServiceProvider :: snmpa:oid(),
+		ItuAlarmActiveServiceUser :: snmpa:oid()}).
