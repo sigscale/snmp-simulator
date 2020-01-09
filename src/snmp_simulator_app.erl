@@ -246,12 +246,8 @@ install3(Nodes, Acc) ->
 	end.
 %% @hidden
 install4(Nodes, Acc) ->
-	Attributes = [alarmModelNotificationId, alarmModelVarbindIndex,
-			alarmModelVarbindValue, alarmModelDescription,
-			alarmModelSpecificPointer, alarmModelVarbindSubtree,
-			alarmModelResourcePrefix, alarmModelRowStatus],
-	case mnesia:create_table(alarmModelTable,
-			[{disc_copies, Nodes}, {attributes, Attributes},
+	case mnesia:create_table(alarmModelTable, [{disc_copies, Nodes},
+			{attributes, record_info(fields, alarmModelTable)},
 			{snmp, [{key, {string, integer, integer}}]}]) of
 		{atomic, ok} ->
 			error_logger:info_msg("Created new alarm model table.~n"),
@@ -270,14 +266,8 @@ install4(Nodes, Acc) ->
 	end.
 %% @hidden
 install5(Nodes, Acc) ->
-	Attributes = [alarmActiveEngineID, alarmActiveEngineAddressType,
-		alarmActiveEngineAddress, alarmActiveContextName,
-		alarmActiveVariables, alarmActiveNotificationID,
-		alarmActiveResourceId, alarmActiveDescription,
-		alarmActiveLogPointers, alarmActiveModelPointer,
-		alarmActiveSpecificPointer],
-	case mnesia:create_table(alarmActiveTable,
-			[{ram_copies, Nodes}, {attributes, Attributes},
+	case mnesia:create_table(alarmActiveTable, [{ram_copies, Nodes},
+			{attributes, record_info(fields, alarmActiveTable)},
 			{snmp, [{key, {string, string, integer}}]}]) of
 		{atomic, ok} ->
 			error_logger:info_msg("Created new active alarm table.~n"),
@@ -296,18 +286,12 @@ install5(Nodes, Acc) ->
 	end.
 %% @hidden
 install6(Nodes, Acc) ->
-	Attributes = [alarmActiveVariableID, alarmActiveVariableValueType,
-			alarmActiveVariableCounter32Val, alarmActiveVariableUnsigned32Val,
-			alarmActiveVariableTimeTicksVal, alarmActiveVariableInteger32Val,
-			alarmActiveVariableOctetStringVal, alarmActiveVariableIpAddressVal,
-			alarmActiveVariableOidVal, alarmActiveVariableCounter64Val,
-			alarmActiveVariableOpaqueVal],
-	case mnesia:create_table(alarmActiveVariableTable,
-			[{ram_copies, Nodes}, {attributes, Attributes},
+	case mnesia:create_table(alarmActiveVariableTable, [{ram_copies, Nodes},
+			{attributes, record_info(fields, alarmActiveVariableTable)},
 			{snmp, [{key, {string, integer, integer}}]}]) of
 		{atomic, ok} ->
 			error_logger:info_msg("Created new active alarm variables table.~n"),
-			install7(Nodes, [alarmActiveVariableTable| Acc]);
+			install7(Nodes, [alarmActiveVariableTable | Acc]);
 		{aborted, {not_active, _, Node} = Reason} ->
 			error_logger:error_report(["Mnesia not started on node",
 					{node, Node}]),
@@ -322,11 +306,9 @@ install6(Nodes, Acc) ->
 	end.
 %% @hidden
 install7(Nodes, Acc) ->
-	Attributes = [alarmActiveStatsActiveCurrent, alarmActiveStatsActives,
-			alarmActiveStatsLastRaise, alarmActiveStatsLastClear],
-	case mnesia:create_table(alarmActiveStatsTable,
-			[{ram_copies, Nodes}, {attributes, Attributes},
-			{snmp, [{key, {string}}]}]) of
+	case mnesia:create_table(alarmActiveStatsTable, [{ram_copies, Nodes},
+			{attributes, record_info(fields, alarmActiveStatsTable)},
+			{snmp, [{key, string}]}]) of
 		{atomic, ok} ->
 			error_logger:info_msg("Created new active alarm statistics table.~n"),
 			install8(Nodes, [alarmActiveStatsTable | Acc]);
@@ -344,13 +326,8 @@ install7(Nodes, Acc) ->
 	end.
 %% @hidden
 install8(Nodes, Acc) ->
-	Attributes = [alarmClearDateAndTime, alarmClearEngineID,
-			alarmClearEngineAddressType, alarmClearEngineAddress,
-			alarmClearContextName, alarmClearNotificationID,
-			alarmClearResourceId, alarmClearLogIndex,
-			alarmClearModelPointer],
-	case mnesia:create_table(alarmClearTable,
-			[{ram_copies, Nodes}, {attributes, Attributes},
+	case mnesia:create_table(alarmClearTable, [{ram_copies, Nodes},
+			{attributes, record_info(fields, alarmClearTable)},
 			{snmp, [{key, {string, string, integer}}]}]) of
 		{atomic, ok} ->
 			error_logger:info_msg("Created new cleared alarm table.~n"),
