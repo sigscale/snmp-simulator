@@ -74,16 +74,16 @@
 		{key :: {AlarmListName :: string(),
 				AlarmModelIndex :: ?Unsigned32,
 				ItuAlarmPerceivedSeverity :: 1..6},
-		 ItuAlarmEventType :: 1..11,
-		 ItuAlarmProbableCause :: 1..1024, 
-		 ItuAlarmAdditionalText :: string(),
-		 ItuAlarmGenericModel = [0, 0] :: snmpa:oid()}).
+		 ituAlarmEventType :: 1..11,
+		 ituAlarmProbableCause :: 1..1024, 
+		 ituAlarmAdditionalText :: string(),
+		 tuAlarmGenericModel = [0, 0] :: snmpa:oid()}).
 
 -record(ituAlarmActiveTable,
 		{key :: {AlarmListName :: string(),
 				AlarmActiveDateAndTime :: string(),
 				AlarmActiveIndex :: ?Unsigned32},
-		ItuAlarmActiveTrendIndication :: 1..3,
-		ItuAlarmActiveDetector :: snmpa:oid(),
-		ItuAlarmActiveServiceProvider :: snmpa:oid(),
-		ItuAlarmActiveServiceUser :: snmpa:oid()}).
+		ituAlarmActiveTrendIndication :: 1..3,
+		ituAlarmActiveDetector :: snmpa:oid(),
+		tuAlarmActiveServiceProvider :: snmpa:oid(),
+		ituAlarmActiveServiceUser :: snmpa:oid()}).
