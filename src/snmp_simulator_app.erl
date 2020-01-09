@@ -358,7 +358,7 @@ install9(Nodes, Acc) ->
 					{node, Node}]),
 			{error, Reason};
 		{aborted, {already_exists, ituAlarmTable}} ->
-			error_logger:info_msg("Found existing cleared alarm table.~n"),
+			error_logger:info_msg("Found existing itu alarm table.~n"),
 			install10(Nodes, [ituAlarmTable | Acc]);
 		{aborted, Reason} ->
 			error_logger:error_report([mnesia:error_description(Reason),
@@ -369,7 +369,7 @@ install9(Nodes, Acc) ->
 install10(Nodes, Acc) ->
 	case mnesia:create_table(ituAlarmActiveTable, [{ram_copies, Nodes},
 			{attributes, record_info(fields, ituAlarmActiveTable)},
-			{snmp, [{key, {string, integer, integer}}]}]) of
+			{snmp, [{key, {string, string, integer}}]}]) of
 		{atomic, ok} ->
 			error_logger:info_msg("Created new itu active alarm table.~n"),
 			install11(Nodes, [ituAlarmActiveTable | Acc]);
@@ -378,7 +378,7 @@ install10(Nodes, Acc) ->
 					{node, Node}]),
 			{error, Reason};
 		{aborted, {already_exists, ituAlarmActiveTable}} ->
-			error_logger:info_msg("Found existing cleared alarm table.~n"),
+			error_logger:info_msg("Found existing itu active alarm table.~n"),
 			install11(Nodes, [ituAlarmActiveTable | Acc]);
 		{aborted, Reason} ->
 			error_logger:error_report([mnesia:error_description(Reason),

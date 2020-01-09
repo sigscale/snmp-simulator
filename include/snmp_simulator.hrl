@@ -75,7 +75,7 @@
 				AlarmModelIndex :: ?Unsigned32,
 				ItuAlarmPerceivedSeverity :: 1..6},
 		 ituAlarmEventType :: 1..11,
-		 ituAlarmProbableCause :: 1..1024, 
+		 ituAlarmProbableCause :: 1..1024,
 		 ituAlarmAdditionalText :: string(),
 		 tuAlarmGenericModel = [0, 0] :: snmpa:oid()}).
 
@@ -87,3 +87,4 @@
 		ituAlarmActiveDetector :: snmpa:oid(),
 		tuAlarmActiveServiceProvider :: snmpa:oid(),
 		ituAlarmActiveServiceUser :: snmpa:oid()}).
+
