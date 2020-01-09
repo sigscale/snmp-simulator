@@ -91,7 +91,7 @@ unload(Agent) ->
 
 %% @hidden
 mibs() ->
-	['ALARM-MIB', 'ITU-ALARM-MIB', 'IANA-ITU-ALARM-TC-MIB',
-			'ITU-ALARM-TC-MIB', 'IANAifType-MIB', 'IF-MIB',
-			'RMON-MIB', 'RMON2-MIB'].
+	["ALARM-MIB", "ITU-ALARM-MIB", "IANA-ITU-ALARM-TC-MIB",
+			"ITU-ALARM-TC-MIB", "IANAifType-MIB", "IF-MIB",
+			"RMON-MIB", "RMON2-MIB"].
 
