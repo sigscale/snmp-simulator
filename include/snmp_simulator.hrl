@@ -70,3 +70,12 @@
 		alarmClearLogIndex :: ?Unsigned32,
 		alarmClearModelPointer :: snmpa:oid()}).
 
+-record(ituAlarmTable,
+		{key :: {AlarmListName :: string(),
+				AlarmModelIndex :: ?Unsigned32,
+				ItuAlarmPerceivedSeverity :: 1..6},
+		 ituAlarmEventType :: 1..11,
+		 ituAlarmProbableCause :: 1..1024, 
+		 ituAlarmAdditionalText :: string(),
+		 ituAlarmGenericModel = [0, 0] :: snmpa:oid()}).
+
