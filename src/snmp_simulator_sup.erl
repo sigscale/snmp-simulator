@@ -46,6 +46,7 @@ init([] = _Args) ->
 %%  internal functions
 %%----------------------------------------------------------------------
 
+-dialyzer({[no_unused], supervisor/3}).
 -spec supervisor(StartMod, RegName, Args) -> Result
 	when
 		StartMod :: atom(),
