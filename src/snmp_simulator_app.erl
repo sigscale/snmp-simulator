@@ -54,7 +54,7 @@
 start(normal = _StartType, _Args) ->
 	Tables = [snmp_variables, alarmModelTable, alarmActiveTable,
 			alarmActiveVariableTable, alarmActiveStatsTable, alarmClearTable,
-			ituAlarmTable, ituAlarmActiveTable],
+			ituAlarmTable, ituAlarmActiveTable, ituAlarmActiveStatsTable],
 	case mnesia:wait_for_tables(Tables, ?WAITFORTABLES) of
 		ok ->
 			start2();
@@ -386,7 +386,27 @@ install10(Nodes, Acc) ->
 			{error, Reason}
 	end.
 %% @hidden
-install11(_Nodes, Acc) ->
+install11(Nodes, Acc) ->
+	case mnesia:create_table(ituAlarmActiveStatsTable, [{ram_copies, Nodes},
+			{attributes, record_info(fields, ituAlarmActiveStatsTable)},
+			{snmp, [{key, string}]}]) of
+		{atomic, ok} ->
+			error_logger:info_msg("Created new itu active alarm stats table.~n"),
+			install12(Nodes, [ituAlarmActiveStatsTable| Acc]);
+		{aborted, {not_active, _, Node} = Reason} ->
+			error_logger:error_report(["Mnesia not started on node",
+					{node, Node}]),
+			{error, Reason};
+		{aborted, {already_exists, ituAlarmActiveStatsTable}} ->
+			error_logger:info_msg("Found existing itu active alarm stats table.~n"),
+			install12(Nodes, [ituAlarmActiveStatsTable| Acc]);
+		{aborted, Reason} ->
+			error_logger:error_report([mnesia:error_description(Reason),
+				{error, Reason}]),
+			{error, Reason}
+	end.
+%% @hidden
+install12(_Nodes, Acc) ->
 	{ok, Acc}.
 
 -spec force(Tables) -> Result
