@@ -351,14 +351,14 @@ install9(Nodes, Acc) ->
 			{attributes, record_info(fields, ituAlarmTable)},
 			{snmp, [{key, {string, integer, integer}}]}]) of
 		{atomic, ok} ->
-			error_logger:info_msg("Created new itu alarm table.~n"),
+			error_logger:info_msg("Created new ITU alarm model table.~n"),
 			install10(Nodes, [ituAlarmTable | Acc]);
 		{aborted, {not_active, _, Node} = Reason} ->
 			error_logger:error_report(["Mnesia not started on node",
 					{node, Node}]),
 			{error, Reason};
 		{aborted, {already_exists, ituAlarmTable}} ->
-			error_logger:info_msg("Found existing itu alarm table.~n"),
+			error_logger:info_msg("Found existing ITU alarm model table.~n"),
 			install10(Nodes, [ituAlarmTable | Acc]);
 		{aborted, Reason} ->
 			error_logger:error_report([mnesia:error_description(Reason),
@@ -371,14 +371,14 @@ install10(Nodes, Acc) ->
 			{attributes, record_info(fields, ituAlarmActiveTable)},
 			{snmp, [{key, {string, string, integer}}]}]) of
 		{atomic, ok} ->
-			error_logger:info_msg("Created new itu active alarm table.~n"),
+			error_logger:info_msg("Created new ITU active alarm table.~n"),
 			install11(Nodes, [ituAlarmActiveTable | Acc]);
 		{aborted, {not_active, _, Node} = Reason} ->
 			error_logger:error_report(["Mnesia not started on node",
 					{node, Node}]),
 			{error, Reason};
 		{aborted, {already_exists, ituAlarmActiveTable}} ->
-			error_logger:info_msg("Found existing itu active alarm table.~n"),
+			error_logger:info_msg("Found existing ITU active alarm table.~n"),
 			install11(Nodes, [ituAlarmActiveTable | Acc]);
 		{aborted, Reason} ->
 			error_logger:error_report([mnesia:error_description(Reason),
@@ -391,14 +391,14 @@ install11(Nodes, Acc) ->
 			{attributes, record_info(fields, ituAlarmActiveStatsTable)},
 			{snmp, [{key, string}]}]) of
 		{atomic, ok} ->
-			error_logger:info_msg("Created new itu active alarm stats table.~n"),
+			error_logger:info_msg("Created new ITU active alarm statistics table.~n"),
 			install12(Nodes, [ituAlarmActiveStatsTable| Acc]);
 		{aborted, {not_active, _, Node} = Reason} ->
 			error_logger:error_report(["Mnesia not started on node",
 					{node, Node}]),
 			{error, Reason};
 		{aborted, {already_exists, ituAlarmActiveStatsTable}} ->
-			error_logger:info_msg("Found existing itu active alarm stats table.~n"),
+			error_logger:info_msg("Found existing ITU active alarm statistics table.~n"),
 			install12(Nodes, [ituAlarmActiveStatsTable| Acc]);
 		{aborted, Reason} ->
 			error_logger:error_report([mnesia:error_description(Reason),
