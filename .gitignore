@@ -8,6 +8,7 @@ mibs/Makefile.in
 priv/Makefile.in
 priv/mibs/Makefile.in
 src/Makefile.in
+test/Makefile.in
 
 # http://www.gnu.org/software/autoconf
 aclocal.m4
