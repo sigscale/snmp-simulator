@@ -88,3 +88,16 @@
 		tuAlarmActiveServiceProvider :: snmpa:oid(),
 		ituAlarmActiveServiceUser :: snmpa:oid()}).
 
+-record(ituAlarmActiveStatsTable,
+		{key :: (AlarmListName :: string()),
+		ituAlarmActiveStatsIndeterminateCurrent :: ?Unsigned32,
+		ituAlarmActiveStatsCriticalCurrent :: ?Unsigned32,
+		ituAlarmActiveStatsMajorCurrent :: ?Unsigned32,
+		ituAlarmActiveStatsMinorCurrent :: ?Unsigned32,
+		ituAlarmActiveStatsWarningCurrent :: ?Unsigned32,
+		ituAlarmActiveStatsIndeterminates :: ?Unsigned32,
+		ituAlarmActiveStatsCriticals :: ?Unsigned32,
+		ituAlarmActiveStatsMajors :: ?Unsigned32,
+		ituAlarmActiveStatsMinors :: ?Unsigned32,
+		ituAlarmActiveStatsWarnings ::?Unsigned32}).
+
