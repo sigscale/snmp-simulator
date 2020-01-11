@@ -20,4 +20,37 @@ The following command will initialize {@link //snmp_simulator. snmp_simulator}.
 ==Operation==
 
 ==Configuration==
+SNMP agent configuration is described in the {@link //snmp. snmp} application
+documentation.
+
+=== Agent SNMP Engine ID ===
+A value for SnmpEngineID should be generated using the specific algorithm
+defined in SNMP-FRAMEWORK-MIB (RFC3411). Use the
+{@link //sigscale_mib/sigscale_snmp_lib:engine_id/0. sigscale_snmp_lib:engine_id/0)
+utility to get a compliant value for your host:
+
+```
+SnmpEngineID = sigscale_snmp_lib:engine_id().
+[128,0,196,210,3,10,79,67,123,9,88]
+'''
+
+=== User Based Security Model (USM) ===
+With SNMPv3 the agent and manager may share a secret for authentication using
+either MD5 or SHA. RFC2274 specifies an algorithm to generate a localized key
+using a passphrase and SnmpEngineID. This localized authentication key is defined
+in the agent's and manager's `usm.conf' file.
+
+==== Generating Localized Keys ====
+The snmp application can be used to generate localized keys.
+
+```
+1> application:start(crypto).
+ok
+2> Passphrase1 = "The quick brown fox jumps over the lazy dog.",
+2> snmp:passwd2localized_key(md5, Passphrase1, SnmpEngineID).
+[208,83,160,236,200,189,161,177,179,212,205,99,18,6,165,94]
+3> Passphrase2 = "Pack my box with five dozen liquor jugs.",
+3> snmp:passwd2localized_key(md5, Passphrase2, SnmpEngineID).
+[218,229,119,149,79,70,163,253,62,186,166,60,33,150,213,143].
+'''
 
