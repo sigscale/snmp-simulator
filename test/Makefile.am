@@ -3,7 +3,10 @@
 ##
 ## Process this file with automake to produce Makefile.in
 
-testmods = snmp_simulator_api_SUITE
+testmods = snmp_simulator_test_lib \
+		snmp_simulator_snmpm_cb \
+		snmp_simulator_api_SUITE \
+		snmp_simulator_snmp_SUITE
 
 check_DATA = .dialyzer_ok .common_test_ok
 
