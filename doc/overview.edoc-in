@@ -125,7 +125,7 @@ privacy.
     [218,229,119,149,79,70,163,253,62,186,166,60,33,150,213,143]}.
 '''
 
-==== Notifications ===
+==== Notifications ====
 The `snmp/agent/conf/notify.conf' file defines management targets which
 should receive notifications.
 
