@@ -10,8 +10,6 @@
 	{registered,
 			[]},
 	{applications, []},
-	{env,
-			[{mib_dir, "mibs"},
-			{bin_dir, "priv/mibs"}]},
+	{env,[]},
 	{mod, {snmp_simulator_app, []}}]}.
 

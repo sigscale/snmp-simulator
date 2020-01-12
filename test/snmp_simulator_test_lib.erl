@@ -89,10 +89,8 @@ start(Config, []) ->
 	DbDir = PrivDir ++ "db",
 	case file:make_dir(DbDir) of
 		ok ->
-			ok = application:set_env(mnesia, dir, DbDir),
 			start1(Config, PrivDir);
 		{error, eexist} ->
-			ok = application:set_env(mnesia, dir, DbDir),
 			start1(Config, PrivDir);
 		{error, Reason} ->
 			{error, Reason}
