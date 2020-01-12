@@ -32,6 +32,7 @@
 -define(sigscalePEN, 50386).
 
 -include_lib("common_test/include/ct.hrl").
+-include_lib("snmp/include/snmp_types.hrl").
 -include("snmp_simulator.hrl").
 
 %%---------------------------------------------------------------------
@@ -43,32 +44,29 @@
 %%
 suite() ->
 	AgentPort = rand:uniform(64511) + 1024,
+erlang:display({?MODULE, ?LINE, AgentPort}),
 	ManagerPort = rand:uniform(64511) + 1024,
 	AgentEngineId = sigscale_snmp_lib:engine_id(),
+   ManagerEngineId = [128,0,196,210,5]
+         ++ binary_to_list(crypto:strong_rand_bytes(27)),
 	[{userdata, [{doc, "Test suite for SNMP agent in SigScale SNMP Simulator"}]},
 	{timetrap, {seconds, 60}},
 	{require, snmp_mgr_agent, snmp},
 	{default_config, snmp,
 			[{start_agent, true},
-			{agent_notify_type, trap},
 			{agent_engine_id, AgentEngineId},
-			{agent_vsns, [v1, v2, v3]},
+			{agent_udp, AgentPort},
+			{agent_vsns, [v1, v2]},
 			{agent_community, [{"public", "public", "ct", "", ""}]},
-			{agent_vacm,
-					[{vacmSecurityToGroup, usm, "ct", "ct"},
-					{vacmSecurityToGroup, v2c, "ct", "ct"},
-					{vacmAccess, "ct", "", any, noAuthNoPriv, exact, "restricted", "", "restricted"},
-					{vacmAccess, "ct", "", usm, authNoPriv, exact, "internet", "internet", "internet"},
-					{vacmAccess, "ct", "", usm, authPriv, exact, "internet", "internet", "internet"},
-					{vacmViewTreeFamily, "internet", [1,3,6,1], included, null},
-					{vacmViewTreeFamily, "restricted", [1,3,6,1], included, null}]},
-			{agent_target_address_def, [{"ct_trap", transportDomainUdpIpv4, {[127,0,0,1], AgentPort},
-					1500, 3, "ct_tag", "ct_params", AgentEngineId, [], 2048}]},
-			{agent_target_param_def, [{"ct_params", v1, usm, "ct", noAuthNoPriv}]},
+			{agent_target_address_def,
+					[{"ct_trap", transportDomainUdpIpv4, {[127,0,0,1], ManagerPort},
+					4000, 3, "ct_tag", "ct_params", ManagerEngineId, [], 2048}]},
 			{start_manager, true},
+			{engine_id, ManagerEngineId},
 			{mgr_port, ManagerPort},
-			{managed_agents, [{simulator, ["ct", {127,0,0,1}, AgentPort, []]}]},
-			{users, [{"ct", [snmp_simulator_snmpm_cb, self()]}]}]},
+			{users, [{ct, [snmpm_user_default, []]}]},
+			{managed_agents, [{simulator, [ct, {127,0,0,1}, AgentPort,
+					[{engine_id, AgentEngineId}, {community, "public"}]]}]}]},
 	{require, snmp_app},
 	{default_config, snmp_app,
 			[{manager,
@@ -103,9 +101,9 @@ init_per_suite(Config) ->
 -spec end_per_suite(Config :: [tuple()]) -> any().
 %% Cleanup after the whole suite.
 %%
-end_per_suite(Config) ->
-	ok = snmp_simulator_test_lib:stop(),
-	ok = ct_snmp:stop(Config).
+end_per_suite(_Config) ->
+	ok = snmp_simulator_test_lib:stop().
+	% ok = ct_snmp:stop(Config). % deletes configuration files
 
 -spec init_per_testcase(TestCase :: atom(), Config :: [tuple()]) -> Config :: [tuple()].
 %% Initialization before each test case.
@@ -142,7 +140,8 @@ get_model_last_changed(_Config) ->
 	[User] = snmpm:which_users(),
 	[Agent] = snmpm:which_agents(),
 	{ok, [AlarmModelLastChanged]} = snmpm:name_to_oid(alarmModelLastChanged),
-	{ok, SnmpReply, Remaining} = snmpm:sync_get(User, Agent, [AlarmModelLastChanged ++ [0]]).
+	{ok, {noError, _, [#varbind{value = Value}]}, _} = snmpm:sync_get(User,
+			Agent, [AlarmModelLastChanged ++ [0]]).
 
 %%---------------------------------------------------------------------
 %%  Internal functions
