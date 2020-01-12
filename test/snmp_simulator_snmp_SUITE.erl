@@ -46,8 +46,12 @@ suite() ->
 	AgentPort = rand:uniform(64511) + 1024,
 	ManagerPort = rand:uniform(64511) + 1024,
 	AgentEngineId = sigscale_snmp_lib:engine_id(),
-   ManagerEngineId = [128,0,196,210,5]
-         ++ binary_to_list(crypto:strong_rand_bytes(27)),
+	F = fun F(Acc) when length(Acc) < 27 ->
+				F([rand:uniform(47) + 47 | Acc]);
+			F(Acc) ->
+				[128,0,196,210,5] ++ Acc
+	end,
+   ManagerEngineId = F([]),
 	[{userdata, [{doc, "Test suite for SNMP agent in SigScale SNMP Simulator"}]},
 	{timetrap, {seconds, 60}},
 	{require, snmp_mgr_agent, snmp},
