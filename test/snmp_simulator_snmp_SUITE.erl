@@ -44,7 +44,6 @@
 %%
 suite() ->
 	AgentPort = rand:uniform(64511) + 1024,
-erlang:display({?MODULE, ?LINE, AgentPort}),
 	ManagerPort = rand:uniform(64511) + 1024,
 	AgentEngineId = sigscale_snmp_lib:engine_id(),
    ManagerEngineId = [128,0,196,210,5]
@@ -140,8 +139,10 @@ get_model_last_changed(_Config) ->
 	[User] = snmpm:which_users(),
 	[Agent] = snmpm:which_agents(),
 	{ok, [AlarmModelLastChanged]} = snmpm:name_to_oid(alarmModelLastChanged),
-	{ok, {noError, _, [#varbind{value = Value}]}, _} = snmpm:sync_get(User,
-			Agent, [AlarmModelLastChanged ++ [0]]).
+	{ok, {noError, _, [#varbind{variabletype = 'TimeTicks',
+			value = Value}]}, _} = snmpm:sync_get(User, Agent,
+			[AlarmModelLastChanged ++ [0]]),
+	true = is_integer(Value).
 
 %%---------------------------------------------------------------------
 %%  Internal functions
