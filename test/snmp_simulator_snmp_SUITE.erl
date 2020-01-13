@@ -159,7 +159,7 @@ add_model(_Config) ->
 	{ok, [AlarmModelDescription]} = snmpm:name_to_oid(alarmModelDescription),
 	{ok, [AlarmModelRowStatus]} = snmpm:name_to_oid(alarmModelRowStatus),
 	{ok, [AlarmClearState]} = snmpm:name_to_oid(alarmClearState),
-	Index = [0, 1, 1],
+	Index = next_model(User, Agent),
 	OidVars = [{AlarmModelNotificationId ++ Index, AlarmClearState},
 			{AlarmModelDescription ++ Index, AlarmDescription},
 			{AlarmModelRowStatus ++ Index, 4}],
@@ -171,4 +171,30 @@ add_model(_Config) ->
 %%---------------------------------------------------------------------
 %%  Internal functions
 %%---------------------------------------------------------------------
+
+-spec next_model(User, Agent) -> Result
+	when
+		User :: string(),
+		Agent :: string(),
+		Result :: list().
+%% @doc Find index for new row in table.
+next_model(User, Agent) ->
+	{ok, [AlarmModelTable]} = snmpm:name_to_oid(alarmModelTable),
+	{ok, [Column1]} = snmpm:name_to_oid(alarmModelNotificationId),
+	{ok, [Column2]} = snmpm:name_to_oid(alarmModelVarbindIndex),
+	next_model(User, Agent, Column1, Column2, [],
+			snmpm:sync_get_next(User, Agent, [AlarmModelTable])).
+%% @hidden
+next_model(User, Agent, Column1, Column2, LastIndex,
+		{ok, {noError, _, [#varbind{oid = OID}]}, _}) ->
+	case catch lists:split(length(Column1), OID) of
+		{Column1, Index} ->
+			next_model(User, Agent, Column1, Column2, Index,
+					snmpm:sync_get_next(User, Agent, [OID]));
+		{Column2, _Index} ->
+			[0, N, _] = LastIndex,
+			[0, N + 1, 1];
+		_ when LastIndex == [] ->
+			[0, 1, 1]
+	end.
 
