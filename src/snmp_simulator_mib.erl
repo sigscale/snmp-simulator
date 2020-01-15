@@ -25,7 +25,7 @@
 -export([load/0, load/1, unload/0, unload/1]).
 
 %% export the snmp_simulator_mib snmp agent callbacks
--export([]).
+-export([alarm_model_table/3]).
 
 -include("snmp_simulator.hrl").
 
@@ -84,6 +84,32 @@ unload(Agent) ->
 %%----------------------------------------------------------------------
 %% The snmp_simulator_mib snmp agent callbacks
 %----------------------------------------------------------------------
+
+-spec alarm_model_table(Operation, RowIndex, Columns) -> Result
+	when
+		Operation :: get | get_next | is_set_ok | undo | set,
+		RowIndex :: ObjectId,
+		ObjectId :: [integer()],
+		Columns :: [Column],
+		Column :: integer(),
+		Result :: [Element] | {genErr, Column} | {noValue, Error},
+		Error :: noSuchObject | noSuchInstance | commitFailed | undoFailed,
+		Element :: {value, Value} | {ObjectId, Value},
+		Value :: atom() | integer() | string() | [integer()].
+%% @doc Handle SNMP requests for the alarm model table.
+%% @private
+alarm_model_table(set = Operation, RowIndex, Columns) ->
+	case snmp_generic:variable_func(set, snmp_standard_mib:sys_up_time(),
+			{alarmModelLastChanged, mnesia}) of
+		noError ->
+			snmp_generic:table_func(Operation, RowIndex, Columns,
+					{alarmModelTable, mnesia});
+		Error ->
+			Error
+	end;
+alarm_model_table(Operation, RowIndex, Columns) ->
+	snmp_generic:table_func(Operation, RowIndex, Columns,
+			{alarmModelTable, mnesia}).
 
 %%----------------------------------------------------------------------
 %% internal functions

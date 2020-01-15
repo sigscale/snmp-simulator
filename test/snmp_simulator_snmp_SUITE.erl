@@ -130,23 +130,11 @@ sequences() ->
 %% Returns a list of all test cases in this test suite.
 %%
 all() ->
-	[get_model_last_changed, add_model].
+	[add_model, get_model_last_changed].
 
 %%---------------------------------------------------------------------
 %%  Test cases
 %%---------------------------------------------------------------------
-
-get_model_last_changed() ->
-	[{userdata, [{doc, "Get the time of the last model change."}]}].
-
-get_model_last_changed(_Config) ->
-	[User] = snmpm:which_users(),
-	[Agent] = snmpm:which_agents(),
-	{ok, [AlarmModelLastChanged]} = snmpm:name_to_oid(alarmModelLastChanged),
-	{ok, {noError, _, [#varbind{variabletype = 'TimeTicks',
-			value = Value}]}, _} = snmpm:sync_get(User, Agent,
-			[AlarmModelLastChanged ++ [0]]),
-	true = is_integer(Value).
 
 add_model() ->
 	[{userdata, [{doc, "Add an alarm model."}]}].
@@ -167,6 +155,25 @@ add_model(_Config) ->
 	#varbind{value = AlarmClearState} = lists:keyfind(AlarmModelNotificationId ++ Index, #varbind.oid, VarBinds),
 	#varbind{value = AlarmDescription} = lists:keyfind(AlarmModelDescription ++ Index, #varbind.oid, VarBinds),
 	#varbind{value = 4} = lists:keyfind(AlarmModelRowStatus ++ Index, #varbind.oid, VarBinds).
+
+get_model_last_changed() ->
+	[{userdata, [{doc, "Get the time of the last model change."}]}].
+
+get_model_last_changed(_Config) ->
+	[User] = snmpm:which_users(),
+	[Agent] = snmpm:which_agents(),
+	AlarmDescription = "Clear Alarm",
+	{ok, [AlarmModelLastChanged]} = snmpm:name_to_oid(alarmModelLastChanged),
+	{ok, [AlarmModelDescription]} = snmpm:name_to_oid(alarmModelDescription),
+	Start = snmp_standard_mib:sys_up_time(),
+	Index = [0, 1, 1],
+	OidVars = [{AlarmModelDescription ++ Index, AlarmDescription}],
+	{ok, {noError, _, _VarBinds}, _} = snmpm:sync_set(User, Agent, OidVars),
+	{ok, {noError, _, [#varbind{variabletype = 'TimeTicks',
+			value = LastChanged}]}, _} = snmpm:sync_get(User, Agent,
+			[AlarmModelLastChanged ++ [0]]),
+	true = Start =< LastChanged,
+	true = LastChanged =< snmp_standard_mib:sys_up_time().
 
 %%---------------------------------------------------------------------
 %%  Internal functions

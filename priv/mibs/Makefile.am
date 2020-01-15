@@ -14,7 +14,10 @@ emib_DATA = ITU-ALARM-TC-MIB.bin \
 		ALARM-MIB.bin \
 		ITU-ALARM-MIB.bin
 
-%.bin:$(top_srcdir)/mibs/%.mib # $(top_srcdir)/mibs/%.funcs
+ALARM-MIB.bin:$(top_srcdir)/mibs/ALARM-MIB.mib $(top_srcdir)/mibs/ALARM-MIB.funcs
+	$(ERLC) $(ERLCFLAGS) -I $(ERLANG_LIB_DIR_sigscale_mibs)/priv/mibs -I $(ERLANG_LIB_DIR_snmp)/priv/mib $<
+
+%.bin:$(top_srcdir)/mibs/%.mib
 	$(ERLC) $(ERLCFLAGS) -I $(ERLANG_LIB_DIR_sigscale_mibs)/priv/mibs -I $(ERLANG_LIB_DIR_snmp)/priv/mib $<
 
 CLEANFILES = $(emib_DATA)
