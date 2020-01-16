@@ -347,7 +347,7 @@ install8(Nodes, Acc) ->
 	end.
 %% @hidden
 install9(Nodes, Acc) ->
-	case mnesia:create_table(ituAlarmTable, [{ram_copies, Nodes},
+	case mnesia:create_table(ituAlarmTable, [{disc_copies, Nodes},
 			{attributes, record_info(fields, ituAlarmTable)},
 			{snmp, [{key, {string, integer, integer}}]}]) of
 		{atomic, ok} ->
