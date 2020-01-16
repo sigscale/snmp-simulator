@@ -84,7 +84,7 @@ start(Config, [H | T]) ->
 		{error, Reason}
 	end;
 start(Config, []) ->
-	ok = application:load(snmp_simulator),
+	application:load(snmp_simulator),
 	PrivDir = ?config(priv_dir, Config),
 	DbDir = PrivDir ++ "db",
 	case file:make_dir(DbDir) of
