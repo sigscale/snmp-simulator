@@ -38,19 +38,40 @@
 %% Require variables and set default values for the suite.
 %%
 suite() ->
-	[{timetrap, {minutes, 1}}].
+	AgentPort = rand:uniform(64511) + 1024,
+	AgentEngineId = sigscale_snmp_lib:engine_id(),
+	[{userdata, [{doc, "Test suite for public API of SigScale SNMP Simulator"}]},
+	{timetrap, {seconds, 60}},
+	{require, snmp_mgr_agent, snmp},
+	{default_config, snmp,
+			[{start_agent, true},
+			{agent_engine_id, AgentEngineId},
+			{agent_udp, AgentPort},
+			{agent_vsns, [v1, v2]},
+			{agent_community, [{"private", "private", "all-rights", "", ""}]},
+			{start_manager, false}]},
+	{require, snmp_app},
+	{default_config, snmp_app,
+			[{agent,
+					[{config, [{verbosity, silence}]},
+					{agent_verbosity, silence},
+					{net_if, [{verbosity, silence}]}]}]}].
 
 -spec init_per_suite(Config :: [tuple()]) -> Config :: [tuple()].
-%% Initiation before the whole suite.
+%% Initialization before the whole suite.
 %%
 init_per_suite(Config) ->
+	ok = snmp_simulator_test_lib:initialize_db(Config),
+	ok = ct_snmp:start(Config, snmp_mgr_agent, snmp_app),
+	ok = snmp_simulator_test_lib:start(Config),
 	Config.
 
 -spec end_per_suite(Config :: [tuple()]) -> any().
 %% Cleanup after the whole suite.
 %%
-end_per_suite(_Config) ->
-	ok.
+end_per_suite(Config) ->
+	ok = snmp_simulator_test_lib:stop(),
+	ok = ct_snmp:stop(Config).
 
 -spec init_per_testcase(TestCase :: atom(), Config :: [tuple()]) -> Config :: [tuple()].
 %% Initiation before each test case.
@@ -74,11 +95,41 @@ sequences() ->
 %% Returns a list of all test cases in this test suite.
 %%
 all() ->
-	[].
+	[import].
 
 %%---------------------------------------------------------------------
 %%  Test cases
 %%---------------------------------------------------------------------
+
+import() ->
+	[{userdata, [{doc, "Import alarm models."}]}].
+
+import(Config) ->
+	PrivDir = ?config(priv_dir, Config),
+	Chars = ["{alarmClearState, 2, 1, \"Temperature Normal\", undefined, "
+			"alarmActiveResourceId, undefined, clear, environmentalAlarm, "
+			"undefined, undefined}.", $\n,
+			"{alarmActiveState, 2, 4, \"Temperature Low\", undefined, "
+			"alarmActiveResourceId, undefined, minor, environmentalAlarm, "
+			"lowTemperature, undefined}.", $\n,
+			"{alarmActiveState, 2, 5, \"Temperature Low\", undefined, "
+			"alarmActiveResourceId, undefined, major, environmentalAlarm, "
+			"lowTemperature, undefined}.", $\n,
+			"{alarmActiveState, 2, 6, \"Temperature Low\", undefined, "
+			"alarmActiveResourceId, undefined, critical, environmentalAlarm, "
+			"lowTemperature, undefined}.", $\n,
+			"{alarmActiveState, 2, 4, \"Temperature High\", undefined, "
+			"alarmActiveResourceId, undefined, minor, environmentalAlarm, "
+			"highTemperature, undefined}.", $\n,
+			"{alarmActiveState, 2, 5, \"Temperature High\", undefined, "
+			"alarmActiveResourceId, undefined, major, environmentalAlarm, "
+			"highTemperature, undefined}.", $\n,
+			"{alarmActiveState, 2, 6, \"Temperature High\", undefined, "
+			"alarmActiveResourceId, undefined, critical, environmentalAlarm, "
+			"highTemperature, undefined}.", $\n],
+	ok = file:write_file(PrivDir ++ "/example-alarm-models", Chars),
+	ok = snmp_simulator_import:file(PrivDir ++ "/example-alarm-models").
+
 
 %%---------------------------------------------------------------------
 %%  Internal functions
