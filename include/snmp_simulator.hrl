@@ -77,7 +77,7 @@
 		 ituAlarmEventType :: 1..11,
 		 ituAlarmProbableCause :: 1..1024,
 		 ituAlarmAdditionalText :: string(),
-		 tuAlarmGenericModel = [0, 0] :: snmpa:oid()}).
+		 ituAlarmGenericModel = [0, 0] :: snmpa:oid()}).
 
 -record(ituAlarmActiveTable,
 		{key :: {AlarmListName :: string(),
