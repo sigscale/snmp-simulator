@@ -11,7 +11,8 @@ beam_DATA = snmp_simulator_app.beam \
 		snmp_simulator_sup.beam \
 		snmp_simulator_server.beam \
 		snmp_simulator.beam \
-		snmp_simulator_mib.beam
+		snmp_simulator_mib.beam \
+		snmp_simulator_import.beam
 
 %.beam:$(top_srcdir)/src/%.erl	$(top_srcdir)/include/snmp_simulator.hrl
 	$(ERLC) $(ERLCFLAGS) -I $(top_srcdir)/include -I $(top_builddir)/include $<
