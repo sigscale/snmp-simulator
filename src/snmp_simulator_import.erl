@@ -21,22 +21,26 @@ file(Filename) when is_list(Filename) ->
 import([H | T], N) when is_tuple(H) ->
 	{#alarmModelTable{key = GenKey1} = GenericModel1,
 			#ituAlarmTable{key = ItuKey1} = ItuModel1} = parse_model(H),
-	{value, AlarmModelTable} = snmpa:name_to_oid(alarmModelTable),
-	{value, ItuAlarmTable} = snmpa:name_to_oid(ituAlarmTable),
+	{value, AlarmModelNotificationId} = snmpa:name_to_oid(alarmModelNotificationId),
+	{value, ItuAlarmEventType} = snmpa:name_to_oid(ituAlarmEventType),
 	Index = N + 1,
 	GenKey2 = setelement(2, GenKey1, Index),
+	{ListName, Index, State} = GenKey2,
+	GenRowIndex = [length(ListName)] ++ ListName ++ [Index, State],
 	ItuKey2 = setelement(2, ItuKey1, Index),
+	{ListName, Index, PerceivedSeverity} = ItuKey2,
+	ItuRowIndex = [length(ListName)] ++ ListName ++ [Index, PerceivedSeverity],
 	GenericModel2 = case GenericModel1#alarmModelTable.alarmModelSpecificPointer of
 		[0, 0] ->
 			GenericModel1#alarmModelTable{key = GenKey2,
-					alarmModelSpecificPointer = ItuAlarmTable ++ ItuKey2,
+					alarmModelSpecificPointer = ItuAlarmEventType ++ ItuRowIndex,
 					alarmModelRowStatus = 1};
 		_ ->
 			GenericModel1#alarmModelTable{key = GenKey2,
 					alarmModelRowStatus = 1}
 	end,
 	ItuModel2 = ItuModel1#ituAlarmTable{key = ItuKey2,
-			ituAlarmGenericModel = AlarmModelTable ++ GenKey2},
+			ituAlarmGenericModel = AlarmModelNotificationId ++ GenRowIndex},
 	F = fun() ->
 				ok = mnesia:write(GenericModel2),
 				ok = mnesia:write(ItuModel2)
