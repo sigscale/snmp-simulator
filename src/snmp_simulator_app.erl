@@ -72,14 +72,50 @@ start(normal = _StartType, _Args) ->
 	end.
 %% @hidden
 start2() ->
-	case snmp_simulator_mib:load() of
-		ok ->
+	F = fun() ->
+			mnesia:write(#alarmActiveStatsTable{key = [],
+					alarmActiveStatsActiveCurrent = 0,
+					alarmActiveStatsActives = 0,
+					alarmActiveStatsLastRaise = 0,
+					alarmActiveStatsLastClear = 0})
+	end,
+	case mnesia:transaction(F) of
+		{atomic, ok} ->
 			start3();
-		{error, Reason} ->
+		{aborted, Reason} ->
 			{error, Reason}
 	end.
 %% @hidden
 start3() ->
+	F = fun() ->
+			mnesia:write(#ituAlarmActiveStatsTable{key = [],
+					ituAlarmActiveStatsIndeterminateCurrent = 0,
+					ituAlarmActiveStatsCriticalCurrent = 0,
+					ituAlarmActiveStatsMajorCurrent = 0,
+					ituAlarmActiveStatsMinorCurrent = 0,
+					ituAlarmActiveStatsWarningCurrent = 0,
+					ituAlarmActiveStatsIndeterminates = 0,
+					ituAlarmActiveStatsCriticals = 0,
+					ituAlarmActiveStatsMajors = 0,
+					ituAlarmActiveStatsMinors = 0,
+					ituAlarmActiveStatsWarnings = 0})
+	end,
+	case mnesia:transaction(F) of
+		{atomic, ok} ->
+			start4();
+		{aborted, Reason} ->
+			{error, Reason}
+	end.
+%% @hidden
+start4() ->
+	case snmp_simulator_mib:load() of
+		ok ->
+			start5();
+		{error, Reason} ->
+			{error, Reason}
+	end.
+%% @hidden
+start5() ->
 	case supervisor:start_link(snmp_simulator_sup, []) of
 		{ok, TopSup} ->
 			{ok, TopSup};
@@ -407,7 +443,16 @@ install11(Nodes, Acc) ->
 	end.
 %% @hidden
 install12(_Nodes, Acc) ->
-	{ok, Acc}.
+	F = fun() ->
+			mnesia:write({snmp_variables, alarmModelIndex, 0}),
+			mnesia:write({snmp_variables, alarmActiveIndex, 0})
+	end,
+	case mnesia:transaction(F) of
+		{atomic, ok} ->
+			{ok, Acc};
+		{aborted, Reason} ->
+			{error, Reason}
+	end.
 
 -spec force(Tables) -> Result
 	when
