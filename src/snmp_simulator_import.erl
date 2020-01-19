@@ -9,7 +9,7 @@
 		Filename :: file:filename(),
 		Result :: ok | {error, Reason},
 		Reason :: term().
-%% @doc Import alarm models.
+%% @doc Import alarm model.
 file(Filename) when is_list(Filename) ->
 	case file:consult(Filename) of
 		{ok, Lines} ->
