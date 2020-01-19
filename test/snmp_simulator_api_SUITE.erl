@@ -96,14 +96,14 @@ sequences() ->
 %% Returns a list of all test cases in this test suite.
 %%
 all() ->
-	[import].
+	[import, add_alarm].
 
 %%---------------------------------------------------------------------
 %%  Test cases
 %%---------------------------------------------------------------------
 
 import() ->
-	[{userdata, [{doc, "Import alarm models."}]}].
+	[{userdata, [{doc, "Import alarm model."}]}].
 
 import(Config) ->
 	PrivDir = ?config(priv_dir, Config),
@@ -128,8 +128,8 @@ import(Config) ->
 			"{alarmActiveState, 2, 6, \"Temperature High\", undefined, "
 			"alarmActiveResourceId, undefined, critical, environmentalAlarm, "
 			"highTemperature, undefined}.", $\n],
-	ok = file:write_file(PrivDir ++ "/example-alarm-models", Chars),
-	ok = snmp_simulator_import:file(PrivDir ++ "/example-alarm-models"),
+	ok = file:write_file(PrivDir ++ "/example-alarm-model", Chars),
+	ok = snmp_simulator_import:file(PrivDir ++ "/example-alarm-model"),
 	AlarmModelTable = {alarmModelTable, mnesia},
 	ItuAlarmTable = {ituAlarmTable, mnesia},
 	{value, AlarmClearState} = snmpa:name_to_oid(alarmClearState),
@@ -137,7 +137,6 @@ import(Config) ->
 	{value, ItuAlarmEventType} = snmpa:name_to_oid(ituAlarmEventType),
 	{value, AlarmActiveResourceId} = snmpa:name_to_oid(alarmActiveResourceId),
 	{value, AlarmModelNotificationId} = snmpa:name_to_oid(alarmModelNotificationId),
-	{value, AlarmModelRowStatus} = snmpa:name_to_oid(alarmModelRowStatus),
 	Index1 = snmp_generic:table_next(AlarmModelTable, []),
 	AlarmModelSpecificPointer1 = ItuAlarmEventType ++ itu_index(Index1),
 	[1, 1, AlarmClearState, 2, 1, "Temperature Normal",
@@ -209,6 +208,65 @@ import(Config) ->
 			ItuAlarmGenericModel7] = snmp_generic:table_get_elements(ItuAlarmTable,
 			itu_index(Index7), [1, 2, 3, 4, 5]).
 
+add_alarm() ->
+	[{userdata, [{doc, "Add an active alarm."}]}].
+
+add_alarm(Config) ->
+	PrivDir = ?config(priv_dir, Config),
+	Chars = ["{alarmActiveState, 2, 4, \"Power Failure\", undefined, "
+			"alarmActiveResourceId, undefined, critical, equipmentAlarm, "
+			"powerProblem, undefined}.", $\n],
+	ok = file:write_file(PrivDir ++ "/power-alarm", Chars),
+	ok = snmp_simulator_import:file(PrivDir ++ "/power-alarm"),
+	[{_, EngineID}] = dets:lookup(snmpa_local_db1, snmpEngineID),
+	{value, AlarmActiveState} = snmpa:name_to_oid(alarmActiveState),
+	F1 = fun() ->
+			MatchSpec = [{#alarmModelTable{key = '$1',
+					alarmModelDescription = "Power Failure", _ = '_'}, [], ['$1']}],
+			mnesia:select(alarmModelTable, MatchSpec, read)
+	end,
+	{atomic, [{ListName, Index, State} = Model]} = mnesia:transaction(F1),
+	{value, AlarmModelNotificationId} = snmpa:name_to_oid(alarmModelNotificationId),
+	ModelPointer = AlarmModelNotificationId
+			++ [length(ListName)] ++ ListName ++ [Index, State],
+	{value, ItuAlarmEventType} = snmpa:name_to_oid(ituAlarmEventType),
+	SpecificPointer = ItuAlarmEventType
+			++ [length(ListName)] ++ ListName ++ [Index, 3],
+	F2 = fun() ->
+			[#alarmActiveStatsTable{alarmActiveStatsActiveCurrent = Current,
+					alarmActiveStatsActives = Total}]
+					= mnesia:read(alarmActiveStatsTable, ListName, read),
+			{Current, Total}
+	end,
+	{atomic, {ActiveCurrent1, ActiveTotal1}} = mnesia:transaction(F2),
+	F3 = fun() ->
+			[#ituAlarmActiveStatsTable{ituAlarmActiveStatsCriticalCurrent = Current,
+					ituAlarmActiveStatsCriticals = Total}]
+					= mnesia:read(ituAlarmActiveStatsTable, ListName, read),
+			{Current, Total}
+	end,
+	{atomic, {CriticalCurrent1, CriticalTotal1}} = mnesia:transaction(F3),
+	Resource = resource(),
+	{ok, AlarmIndex} = snmp_simulator:add_alarm(Model, Resource),
+	F4 = fun() ->
+			mnesia:read(alarmActiveTable, AlarmIndex, read)
+	end,
+	{atomic, [#alarmActiveTable{alarmActiveEngineID = EngineID,
+			alarmActiveEngineAddressType = 1,
+			alarmActiveEngineAddress = [127,0, 0, 1],
+			alarmActiveNotificationID = AlarmActiveState,
+			alarmActiveResourceId = Resource,
+			alarmActiveDescription = "Power Failure",
+			alarmActiveModelPointer = ModelPointer,
+			alarmActiveSpecificPointer = SpecificPointer}]}
+			= mnesia:transaction(F4),
+	ActiveCurrent2 = ActiveCurrent1 + 1,
+	ActiveTotal2 = ActiveTotal1 + 1,
+	{atomic, {ActiveCurrent2, ActiveTotal2}} = mnesia:transaction(F2),
+	CriticalCurrent2 = CriticalCurrent1 + 1,
+	CriticalTotal2 = CriticalTotal1 + 1,
+	{atomic, {CriticalCurrent2, CriticalTotal2}} = mnesia:transaction(F3).
+
 %%---------------------------------------------------------------------
 %%  Internal functions
 %%---------------------------------------------------------------------
@@ -234,4 +292,14 @@ itu_index1({Prefix, [5]}) ->
 	Prefix ++ [4];
 itu_index1({Prefix, [6]}) ->
 	Prefix ++ [3].
+
+%% @doc Generate a random resource OID.3pec resource() -> snmpa:oid().
+%% @hidden
+resource() ->
+	resource(rand:uniform(6) + 3, []).
+resource(0, Acc) ->
+	% {value,[1,3,6,1,4,1,50386,5]} = snmampa:name_to_oid(sigscaleExperiment),
+	[1,3,6,1,4,1,50386,5] ++ Acc;
+resource(N, Acc) ->
+	resource(N - 1, [rand:uniform(25) | Acc]).
 
