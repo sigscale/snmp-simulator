@@ -40,7 +40,10 @@
 		Index :: pos_integer(),
 		State :: 1..6,
 		Resource :: snmpa:oid(),
-		Result :: ok | {error, Reason},
+		Result :: {ok, AlarmIndex} | {error, Reason},
+		AlarmIndex :: {ListName, DateAndTime, ActiveIndex},
+		ActiveIndex :: pos_integer(),
+		DateAndTime :: string(),
 		Reason :: term().
 %% @equiv add_alarm(Model, Resource, [])
 add_alarm(Model, Resource) ->
@@ -60,7 +63,10 @@ add_alarm(Model, Resource) ->
 		Column :: atom(),
 		OID :: snmpa:oid(),
 		Value :: term(),
-		Result :: ok | {error, Reason},
+		Result :: {ok, AlarmIndex} | {error, Reason},
+		AlarmIndex :: {ListName, DateAndTime, ActiveIndex},
+		ActiveIndex :: pos_integer(),
+		DateAndTime :: string(),
 		Reason :: not_found | term().
 %% @doc Add an active alarm instance.
 add_alarm(RowIndex = _Model, Resource, Varbinds)
@@ -82,18 +88,21 @@ add_alarm({ListName, Index, State} = Model, Resource, Varbinds)
 		[{_, Address}] when size(Address) =:= 8 ->
 			{2, tuple_to_list(Address)}
 	end,
+	{value, AlarmModelNotificationId} = snmpa:name_to_oid(alarmModelNotificationId),
 	DateTime = datetime(),
 	F = fun() ->
 			[#alarmModelTable{alarmModelNotificationId = Notification,
-					alarmModelSpecificPointer = Specific,
+					alarmModelSpecificPointer = SpecificPointer,
 					alarmModelDescription = Description}]
 					= mnesia:read(alarmModelTable, Model, read),
 			[{_, _, N}] = mnesia:read(snmp_variables,
 					alarmActiveIndex, write),
 			ActiveIndex = N + 1,
 			mnesia:write({snmp_variables, alarmActiveIndex, ActiveIndex}),
-			mnesia:write(#alarmActiveTable{key = {ListName,
-					DateTime, ActiveIndex},
+			ModelPointer = AlarmModelNotificationId
+					++ [length(ListName)] ++ ListName ++ [Index, State],
+			Key = {ListName, DateTime, ActiveIndex},
+			mnesia:write(#alarmActiveTable{key = Key,
 					alarmActiveEngineID = EngineID,
 					alarmActiveEngineAddressType = EngineAddressType,
 					alarmActiveEngineAddress = EngineAddress,
@@ -102,8 +111,8 @@ add_alarm({ListName, Index, State} = Model, Resource, Varbinds)
 					alarmActiveNotificationID = Notification,
 					alarmActiveResourceId = Resource,
 					alarmActiveDescription = Description,
-					alarmActiveModelPointer = Model,
-					alarmActiveSpecificPointer = Specific}),
+					alarmActiveModelPointer = ModelPointer,
+					alarmActiveSpecificPointer = SpecificPointer}),
 			mnesia:write({snmp_variables,
 					alarmActiveLastChanged, snmp_standard_mib:sys_up_time()}),
 			[#alarmActiveStatsTable{alarmActiveStatsActiveCurrent = Current1,
@@ -112,7 +121,7 @@ add_alarm({ListName, Index, State} = Model, Resource, Varbinds)
 			mnesia:write(S1#alarmActiveStatsTable{alarmActiveStatsActiveCurrent
 					= Current1 + 1, alarmActiveStatsActives = Total1 + 1,
 					alarmActiveStatsLastRaise = snmp_standard_mib:sys_up_time()}),
-			case lists:last(Specific) of
+			case lists:last(SpecificPointer) of
 				2 ->
 					[#ituAlarmActiveStatsTable{ituAlarmActiveStatsIndeterminateCurrent = Current2,
 							ituAlarmActiveStatsIndeterminates = Total2} = S2]
@@ -143,18 +152,19 @@ add_alarm({ListName, Index, State} = Model, Resource, Varbinds)
 							= mnesia:read(ituAlarmActiveStatsTable, ListName, write),
 					mnesia:write(S2#ituAlarmActiveStatsTable{ituAlarmActiveStatsWarningCurrent = Current2 + 1,
 							ituAlarmActiveStatsWarnings = Total2 + 1})
-			end
+			end,
+			Key
 	end,
 	case mnesia:transaction(F) of
-		{atomic, ok} ->
-			ok;
+		{atomic, AlarmIndex} ->
+			{ok, AlarmIndex};
 		{aborted, Reason} ->
 			{error, Reason}
 	end.
 
--spec clear_alarm(Alarm) -> Result
+-spec clear_alarm(AlarmIndex) -> Result
 	when
-		Alarm :: {ListName, DateAndTime, Index} | RowIndex,
+		AlarmIndex :: {ListName, DateAndTime, Index} | RowIndex,
 		ListName :: string(),
 		DateAndTime :: string(),
 		Index :: pos_integer(),
@@ -162,19 +172,19 @@ add_alarm({ListName, Index, State} = Model, Resource, Varbinds)
 		Result :: ok | {error, Reason},
 		Reason :: not_found | term().
 %% @doc Clear an active alarm instance.
-clear_alarm(RowIndex = _Alarm) when is_list(RowIndex) ->
+clear_alarm(RowIndex = _AlarmIndex) when is_list(RowIndex) ->
 	case mnesia:snmp_get_mnesia_key(alarmActiveTable, RowIndex) of
 		{ok, Key} ->
 			clear_alarm(Key);
 		undefined ->
 			{error, not_found}
 	end;
-clear_alarm({ListName, DateAndTimea, Index} = Alarm)
+clear_alarm({ListName, DateAndTimea, Index} = AlarmIndex)
 		when is_list(ListName), is_list(DateAndTimea), is_integer(Index) ->
 	F = fun() ->
 			[#alarmActiveTable{alarmActiveSpecificPointer = Specific}]
-					= mnesia:read(alarmActiveTable, Alarm, write),
-			mnesia:delete(alarmActiveTable, Alarm, write),
+					= mnesia:read(alarmActiveTable, AlarmIndex, write),
+			mnesia:delete(alarmActiveTable, AlarmIndex, write),
 			[#alarmActiveStatsTable{alarmActiveStatsActiveCurrent = Current1} = S1]
 					= mnesia:read(alarmActiveStatsTable, ListName, write),
 			mnesia:write(S1#alarmActiveStatsTable{alarmActiveStatsActiveCurrent = Current1 - 1,
