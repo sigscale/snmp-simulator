@@ -1,6 +1,8 @@
 @copyright 2020 SigScale Global Inc.
 @version %VERSION%
 @title %DESCRIPTION%
+@reference <a href="https://tools.ietf.org/html/rfc3877">
+		RFC3877 Alarm Management Information Base (MIB)</a>.
 @doc This application implements an SNMP agent simulator for load testing.
 
 ==Introduction==
