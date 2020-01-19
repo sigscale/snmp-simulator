@@ -13,7 +13,16 @@
 file(Filename) when is_list(Filename) ->
 	case file:consult(Filename) of
 		{ok, Lines} ->
-			import(Lines, 0);
+			F = fun() ->
+					[{_, _, N}] = mnesia:read(snmp_variables, alarmModelIndex, read),
+					N
+			end,
+			case mnesia:transaction(F) of
+				{atomic, N} ->
+					import(Lines, N);
+				{aborted, Reason} ->
+					{error, Reason}
+			end;
 		{error, Reason} ->
 			{error, Reason}
 	end.
@@ -43,7 +52,8 @@ import([H | T], N) when is_tuple(H) ->
 			ituAlarmGenericModel = AlarmModelNotificationId ++ GenRowIndex},
 	F = fun() ->
 				ok = mnesia:write(GenericModel2),
-				ok = mnesia:write(ItuModel2)
+				ok = mnesia:write(ItuModel2),
+				mnesia:write({snmp_variables, alarmModelIndex, Index})
 	end,
 	case mnesia:transaction(F) of
 		{atomic, ok} ->
