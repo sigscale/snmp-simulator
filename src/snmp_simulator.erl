@@ -106,12 +106,44 @@ add_alarm({ListName, Index, State} = Model, Resource, Varbinds)
 					alarmActiveSpecificPointer = Specific}),
 			mnesia:write({snmp_variables,
 					alarmActiveLastChanged, snmp_standard_mib:sys_up_time()}),
-			[#alarmActiveStatsTable{alarmActiveStatsActiveCurrent = Current,
-					alarmActiveStatsActives = Actives} = S]
+			[#alarmActiveStatsTable{alarmActiveStatsActiveCurrent = Current1,
+					alarmActiveStatsActives = Total1} = S1]
 					= mnesia:read(alarmActiveStatsTable, ListName, write),
-			mnesia:write(S#alarmActiveStatsTable{alarmActiveStatsActiveCurrent
-					= Current + 1, alarmActiveStatsActives = Actives + 1,
-					alarmActiveStatsLastRaise = snmp_standard_mib:sys_up_time()})
+			mnesia:write(S1#alarmActiveStatsTable{alarmActiveStatsActiveCurrent
+					= Current1 + 1, alarmActiveStatsActives = Total1 + 1,
+					alarmActiveStatsLastRaise = snmp_standard_mib:sys_up_time()}),
+			case lists:last(Specific) of
+				2 ->
+					[#ituAlarmActiveStatsTable{ituAlarmActiveStatsIndeterminateCurrent = Current2,
+							ituAlarmActiveStatsIndeterminates = Total2} = S2]
+							= mnesia:read(ituAlarmActiveStatsTable, ListName, write),
+					mnesia:write(S2#ituAlarmActiveStatsTable{ituAlarmActiveStatsIndeterminateCurrent = Current2 + 1,
+							ituAlarmActiveStatsIndeterminates = Total2 + 1});
+				3 ->
+					[#ituAlarmActiveStatsTable{ituAlarmActiveStatsCriticalCurrent = Current2,
+							ituAlarmActiveStatsCriticals = Total2} = S2]
+							= mnesia:read(ituAlarmActiveStatsTable, ListName, write),
+					mnesia:write(S2#ituAlarmActiveStatsTable{ituAlarmActiveStatsCriticalCurrent = Current2 + 1,
+							ituAlarmActiveStatsCriticals = Total2 + 1});
+				4 ->
+					[#ituAlarmActiveStatsTable{ituAlarmActiveStatsMajorCurrent = Current2,
+							ituAlarmActiveStatsMajors = Total2} = S2]
+							= mnesia:read(ituAlarmActiveStatsTable, ListName, write),
+					mnesia:write(S2#ituAlarmActiveStatsTable{ituAlarmActiveStatsMajorCurrent = Current2 + 1,
+							ituAlarmActiveStatsMajors = Total2 + 1});
+				5 ->
+					[#ituAlarmActiveStatsTable{ituAlarmActiveStatsMinorCurrent = Current2,
+							ituAlarmActiveStatsMinors = Total2} = S2]
+							= mnesia:read(ituAlarmActiveStatsTable, ListName, write),
+					mnesia:write(S2#ituAlarmActiveStatsTable{ituAlarmActiveStatsMinorCurrent = Current2 + 1,
+							ituAlarmActiveStatsMinors = Total2 + 1});
+				6 ->
+					[#ituAlarmActiveStatsTable{ituAlarmActiveStatsWarningCurrent = Current2,
+							ituAlarmActiveStatsWarnings = Total2} = S2]
+							= mnesia:read(ituAlarmActiveStatsTable, ListName, write),
+					mnesia:write(S2#ituAlarmActiveStatsTable{ituAlarmActiveStatsWarningCurrent = Current2 + 1,
+							ituAlarmActiveStatsWarnings = Total2 + 1})
+			end
 	end,
 	case mnesia:transaction(F) of
 		{atomic, ok} ->
