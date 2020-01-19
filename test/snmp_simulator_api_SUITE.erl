@@ -96,7 +96,7 @@ sequences() ->
 %% Returns a list of all test cases in this test suite.
 %%
 all() ->
-	[import, add_alarm].
+	[import, add_alarm, clear_alarm].
 
 %%---------------------------------------------------------------------
 %%  Test cases
@@ -266,6 +266,46 @@ add_alarm(Config) ->
 	CriticalCurrent2 = CriticalCurrent1 + 1,
 	CriticalTotal2 = CriticalTotal1 + 1,
 	{atomic, {CriticalCurrent2, CriticalTotal2}} = mnesia:transaction(F3).
+
+clear_alarm() ->
+	[{userdata, [{doc, "Clear an active alarm."}]}].
+
+clear_alarm(Config) ->
+	PrivDir = ?config(priv_dir, Config),
+	Chars = ["{alarmClearState, 2, 4, \"Power Failure - cleared\", undefined, "
+			"alarmActiveResourceId, undefined, clear, equipmentAlarm, "
+			"undefined, undefined}.", $\n],
+	ok = file:write_file(PrivDir ++ "/power-alarm-cleared", Chars),
+	ok = snmp_simulator_import:file(PrivDir ++ "/power-alarm-cleared"),
+	F1 = fun() ->
+			MatchSpec = [{#alarmModelTable{key = '$1',
+					alarmModelDescription = "Power Failure", _ = '_'},
+					[], ['$1']}],
+			mnesia:select(alarmModelTable, MatchSpec, read)
+	end,
+	{atomic, [{ListName, _, _} = Model]} = mnesia:transaction(F1),
+	{ok, AlarmIndex} = snmp_simulator:add_alarm(Model, resource()),
+	F2 = fun() ->
+			[#alarmActiveStatsTable{alarmActiveStatsActiveCurrent = Current}]
+					= mnesia:read(alarmActiveStatsTable, ListName, read),
+			Current
+	end,
+	{atomic, ActiveCurrent1} = mnesia:transaction(F2),
+	F3 = fun() ->
+			[#ituAlarmActiveStatsTable{ituAlarmActiveStatsCriticalCurrent = Current}]
+					= mnesia:read(ituAlarmActiveStatsTable, ListName, read),
+			Current
+	end,
+	{atomic, CriticalCurrent1} = mnesia:transaction(F3),
+	ok = snmp_simulator:clear_alarm(AlarmIndex),
+	F4 = fun() ->
+			mnesia:read(alarmActiveTable, AlarmIndex, read)
+	end,
+	{atomic, []} = mnesia:transaction(F4),
+	ActiveCurrent2 = ActiveCurrent1 - 1,
+	{atomic, ActiveCurrent2} = mnesia:transaction(F2),
+	CriticalCurrent2 = CriticalCurrent1 - 1,
+	{atomic, CriticalCurrent2} = mnesia:transaction(F3).
 
 %%---------------------------------------------------------------------
 %%  Internal functions
