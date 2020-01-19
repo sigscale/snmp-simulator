@@ -22,7 +22,7 @@
 -copyright('Copyright (c) 2018-2020 SigScale Global Inc.').
 
 %% export the snmp_simulator  public API
--export([add_alarm/2, add_alarm/3]).
+-export([add_alarm/2, add_alarm/3, clear_alarm/1]).
 -export([datetime/0, iso8601/1]).
 
 -include("snmp_simulator.hrl").
@@ -143,6 +143,63 @@ add_alarm({ListName, Index, State} = Model, Resource, Varbinds)
 							= mnesia:read(ituAlarmActiveStatsTable, ListName, write),
 					mnesia:write(S2#ituAlarmActiveStatsTable{ituAlarmActiveStatsWarningCurrent = Current2 + 1,
 							ituAlarmActiveStatsWarnings = Total2 + 1})
+			end
+	end,
+	case mnesia:transaction(F) of
+		{atomic, ok} ->
+			ok;
+		{aborted, Reason} ->
+			{error, Reason}
+	end.
+
+-spec clear_alarm(Alarm) -> Result
+	when
+		Alarm :: {ListName, DateAndTime, Index} | RowIndex,
+		ListName :: string(),
+		DateAndTime :: string(),
+		Index :: pos_integer(),
+		RowIndex :: [byte()],
+		Result :: ok | {error, Reason},
+		Reason :: not_found | term().
+%% @doc Clear an active alarm instance.
+clear_alarm(RowIndex = _Alarm) when is_list(RowIndex) ->
+	case mnesia:snmp_get_mnesia_key(alarmActiveTable, RowIndex) of
+		{ok, Key} ->
+			clear_alarm(Key);
+		undefined ->
+			{error, not_found}
+	end;
+clear_alarm({ListName, DateAndTimea, Index} = Alarm)
+		when is_list(ListName), is_list(DateAndTimea), is_integer(Index) ->
+	F = fun() ->
+			[#alarmActiveTable{alarmActiveSpecificPointer = Specific}]
+					= mnesia:read(alarmActiveTable, Alarm, write),
+			mnesia:delete(alarmActiveTable, Alarm, write),
+			[#alarmActiveStatsTable{alarmActiveStatsActiveCurrent = Current1} = S1]
+					= mnesia:read(alarmActiveStatsTable, ListName, write),
+			mnesia:write(S1#alarmActiveStatsTable{alarmActiveStatsActiveCurrent = Current1 - 1,
+					alarmActiveStatsLastClear = snmp_standard_mib:sys_up_time()}),
+			case lists:last(Specific) of
+				2 ->
+					[#ituAlarmActiveStatsTable{ituAlarmActiveStatsIndeterminateCurrent = Current2} = S2]
+							= mnesia:read(ituAlarmActiveStatsTable, ListName, write),
+					mnesia:write(S2#ituAlarmActiveStatsTable{ituAlarmActiveStatsIndeterminateCurrent = Current2 - 1});
+				3 ->
+					[#ituAlarmActiveStatsTable{ituAlarmActiveStatsCriticalCurrent = Current2} = S2]
+							= mnesia:read(ituAlarmActiveStatsTable, ListName, write),
+					mnesia:write(S2#ituAlarmActiveStatsTable{ituAlarmActiveStatsCriticalCurrent = Current2 - 1});
+				4 ->
+					[#ituAlarmActiveStatsTable{ituAlarmActiveStatsMajorCurrent = Current2} = S2]
+							= mnesia:read(ituAlarmActiveStatsTable, ListName, write),
+					mnesia:write(S2#ituAlarmActiveStatsTable{ituAlarmActiveStatsMajorCurrent = Current2 - 1});
+				5 ->
+					[#ituAlarmActiveStatsTable{ituAlarmActiveStatsMinorCurrent = Current2} = S2]
+							= mnesia:read(ituAlarmActiveStatsTable, ListName, write),
+					mnesia:write(S2#ituAlarmActiveStatsTable{ituAlarmActiveStatsMinorCurrent = Current2 - 1});
+				6 ->
+					[#ituAlarmActiveStatsTable{ituAlarmActiveStatsWarningCurrent = Current2} = S2]
+							= mnesia:read(ituAlarmActiveStatsTable, ListName, write),
+					mnesia:write(S2#ituAlarmActiveStatsTable{ituAlarmActiveStatsWarningCurrent = Current2 - 1})
 			end
 	end,
 	case mnesia:transaction(F) of
