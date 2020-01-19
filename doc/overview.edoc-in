@@ -4,6 +4,17 @@
 @doc This application implements an SNMP agent simulator for load testing.
 
 ==Introduction==
+This application is intended to be used to benchmark SNMP managers used
+for the collection of alarms. A traffic target in TPS (transactions per
+second) may be defined and statistics are kept for each session.
+
+The SNMP agent simulator implements the
+Alarm Management Information Base (MIB)
+(<a href="https://tools.ietf.org/html/rfc3877">RFC3877</a>).
+An alarm model is created to define the alarms which may be sent to the
+manager. Alarms are then added to the active alarm table which causes an
+SNMP notification to be sent to the manager(s). Active alarms may be
+cleared which also causes a notification.
 
 ==Installation==
 Before starting the application for the first time, {@link //mnesia/mnesia. mnesia}
