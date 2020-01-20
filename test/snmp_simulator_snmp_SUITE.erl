@@ -46,8 +46,11 @@ suite() ->
 	AgentPort = rand:uniform(64511) + 1024,
 	ManagerPort = rand:uniform(64511) + 1024,
 	AgentEngineId = sigscale_snmp_lib:engine_id(),
-	F = fun F(Acc) when length(Acc) < 27 ->
-				F([rand:uniform(47) + 47 | Acc]);
+	F = fun F([H | T])
+					when H =:= 34; H =:= 39; H =:= 92; H =:= 96 ->
+				F(T);
+			F(Acc) when length(Acc) < 27 ->
+				F([rand:uniform(126 - 31) + 31 | Acc]);
 			F(Acc) ->
 				[128,0,196,210,5] ++ Acc
 	end,
