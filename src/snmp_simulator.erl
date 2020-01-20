@@ -95,6 +95,18 @@ add_alarm({ListName, Index, State} = Model, Resource, Varbinds)
 					alarmModelSpecificPointer = SpecificPointer,
 					alarmModelDescription = Description}]
 					= mnesia:read(alarmModelTable, Model, read),
+			PerceivedSeverity = case State of
+				2 -> 2;
+				3 -> 6;
+				4 -> 5;
+				5 -> 4;
+				6 -> 3
+			end,
+			ItuAlarmIndex = {ListName, Index, PerceivedSeverity},
+			[#ituAlarmTable{ituAlarmEventType = EventType,
+					ituAlarmProbableCause = ProbableCause,
+					ituAlarmAdditionalText = AdditionalText}]
+					= mnesia:read(ituAlarmTable, ItuAlarmIndex, read),
 			[{_, _, N}] = mnesia:read(snmp_variables,
 					alarmActiveIndex, write),
 			ActiveIndex = N + 1,
@@ -121,7 +133,7 @@ add_alarm({ListName, Index, State} = Model, Resource, Varbinds)
 			mnesia:write(S1#alarmActiveStatsTable{alarmActiveStatsActiveCurrent
 					= Current1 + 1, alarmActiveStatsActives = Total1 + 1,
 					alarmActiveStatsLastRaise = snmp_standard_mib:sys_up_time()}),
-			case lists:last(SpecificPointer) of
+			case PerceivedSeverity of
 				2 ->
 					[#ituAlarmActiveStatsTable{ituAlarmActiveStatsIndeterminateCurrent = Current2,
 							ituAlarmActiveStatsIndeterminates = Total2} = S2]
@@ -153,10 +165,30 @@ add_alarm({ListName, Index, State} = Model, Resource, Varbinds)
 					mnesia:write(S2#ituAlarmActiveStatsTable{ituAlarmActiveStatsWarningCurrent = Current2 + 1,
 							ituAlarmActiveStatsWarnings = Total2 + 1})
 			end,
-			Key
+			{Key, ModelPointer, Description, PerceivedSeverity, EventType, ProbableCause, AdditionalText}
 	end,
 	case mnesia:transaction(F) of
-		{atomic, AlarmIndex} ->
+		{atomic, {AlarmIndex, ModelPointer, Description, PerceivedSeverity,
+				EventType, ProbableCause, AdditionalText}} ->
+			Varbinds1 = [{alarmActiveModelPointer, ModelPointer},
+					{alarmActiveResourceId, Resource},
+					{alarmActiveDescription, Description},
+					{ituAlarmPerceivedSeverity, PerceivedSeverity},
+					{ituAlarmEventType, EventType}],
+			Varbinds2 = case ProbableCause of
+				ProbableCause when is_integer(ProbableCause) ->
+					Varbinds1 ++ [{ituAlarmProbableCause, ProbableCause}];
+				undefined ->
+					Varbinds1
+			end,
+			Varbinds3 = case AdditionalText of
+				AdditionalText when is_list(AdditionalText) ->
+					Varbinds2 ++ [{ituAlarmAdditionalText, AdditionalText}];
+				undefined ->
+					Varbinds2
+			end,
+			snmpa:send_notification(snmp_master_agent,
+					alarmActiveState, no_receiver, Varbinds3),
 			{ok, AlarmIndex};
 		{aborted, Reason} ->
 			{error, Reason}
@@ -179,40 +211,80 @@ clear_alarm(RowIndex = _AlarmIndex) when is_list(RowIndex) ->
 		undefined ->
 			{error, not_found}
 	end;
-clear_alarm({ListName, DateAndTimea, Index} = AlarmIndex)
-		when is_list(ListName), is_list(DateAndTimea), is_integer(Index) ->
+clear_alarm({ListName, DateAndTime, Index} = AlarmIndex)
+		when is_list(ListName), is_list(DateAndTime), is_integer(Index) ->
+	{value, AlarmModelNotificationId} = snmpa:name_to_oid(alarmModelNotificationId),
 	F = fun() ->
-			[#alarmActiveTable{alarmActiveSpecificPointer = Specific}]
+			[#alarmActiveTable{alarmActiveModelPointer = ModelPointer,
+					alarmActiveResourceId = Resource}]
 					= mnesia:read(alarmActiveTable, AlarmIndex, write),
 			mnesia:delete(alarmActiveTable, AlarmIndex, write),
 			[#alarmActiveStatsTable{alarmActiveStatsActiveCurrent = Current1} = S1]
-					= mnesia:read(alarmActiveStatsTable, ListName, write),
+				 	= mnesia:read(alarmActiveStatsTable, ListName, write),
 			mnesia:write(S1#alarmActiveStatsTable{alarmActiveStatsActiveCurrent = Current1 - 1,
 					alarmActiveStatsLastClear = snmp_standard_mib:sys_up_time()}),
-			case lists:last(Specific) of
+			RowIndex = lists:sublist(ModelPointer,
+					length(AlarmModelNotificationId) + 1, length(ModelPointer)),
+			{ok, {_, _, State} = Key1} = mnesia:snmp_get_mnesia_key(alarmModelTable, RowIndex),
+			case State of
 				2 ->
 					[#ituAlarmActiveStatsTable{ituAlarmActiveStatsIndeterminateCurrent = Current2} = S2]
 							= mnesia:read(ituAlarmActiveStatsTable, ListName, write),
 					mnesia:write(S2#ituAlarmActiveStatsTable{ituAlarmActiveStatsIndeterminateCurrent = Current2 - 1});
 				3 ->
-					[#ituAlarmActiveStatsTable{ituAlarmActiveStatsCriticalCurrent = Current2} = S2]
+					[#ituAlarmActiveStatsTable{ituAlarmActiveStatsWarningCurrent = Current2} = S2]
 							= mnesia:read(ituAlarmActiveStatsTable, ListName, write),
-					mnesia:write(S2#ituAlarmActiveStatsTable{ituAlarmActiveStatsCriticalCurrent = Current2 - 1});
+					mnesia:write(S2#ituAlarmActiveStatsTable{ituAlarmActiveStatsWarningCurrent = Current2 - 1});
 				4 ->
-					[#ituAlarmActiveStatsTable{ituAlarmActiveStatsMajorCurrent = Current2} = S2]
-							= mnesia:read(ituAlarmActiveStatsTable, ListName, write),
-					mnesia:write(S2#ituAlarmActiveStatsTable{ituAlarmActiveStatsMajorCurrent = Current2 - 1});
-				5 ->
 					[#ituAlarmActiveStatsTable{ituAlarmActiveStatsMinorCurrent = Current2} = S2]
 							= mnesia:read(ituAlarmActiveStatsTable, ListName, write),
 					mnesia:write(S2#ituAlarmActiveStatsTable{ituAlarmActiveStatsMinorCurrent = Current2 - 1});
-				6 ->
-					[#ituAlarmActiveStatsTable{ituAlarmActiveStatsWarningCurrent = Current2} = S2]
+				5 ->
+					[#ituAlarmActiveStatsTable{ituAlarmActiveStatsMajorCurrent = Current2} = S2]
 							= mnesia:read(ituAlarmActiveStatsTable, ListName, write),
-					mnesia:write(S2#ituAlarmActiveStatsTable{ituAlarmActiveStatsWarningCurrent = Current2 - 1})
+					mnesia:write(S2#ituAlarmActiveStatsTable{ituAlarmActiveStatsMajorCurrent = Current2 - 1});
+				6 ->
+					[#ituAlarmActiveStatsTable{ituAlarmActiveStatsCriticalCurrent = Current2} = S2]
+							= mnesia:read(ituAlarmActiveStatsTable, ListName, write),
+					mnesia:write(S2#ituAlarmActiveStatsTable{ituAlarmActiveStatsCriticalCurrent = Current2 - 1})
+			end,
+			Key2 = setelement(3, Key1, 1),
+			case mnesia:read(alarmModelTable, Key2, read) of
+				[#alarmModelTable{alarmModelDescription = Description,
+						alarmModelNotificationId = NotificationId}] ->
+					[#ituAlarmTable{ituAlarmEventType = EventType,
+							ituAlarmProbableCause = ProbableCause,
+							ituAlarmAdditionalText = AdditionalText}]
+							= mnesia:read(ituAlarmTable, Key2, read),
+					{NotificationId, ModelPointer, Resource,
+							Description, EventType, ProbableCause, AdditionalText};
+				[] ->
+					ok
 			end
 	end,
 	case mnesia:transaction(F) of
+		{atomic, {NotificationId, ModelPointer, Resource, Description,
+				EventType, ProbableCause, AdditionalText}} ->
+			Varbinds1 = [{alarmActiveModelPointer, ModelPointer},
+					{alarmActiveResourceId, Resource},
+					{alarmActiveDescription, Description},
+					{ituAlarmPerceivedSeverity, 1},
+					{ituAlarmEventType, EventType}],
+			Varbinds2 = case ProbableCause of
+				ProbableCause when is_integer(ProbableCause) ->
+					Varbinds1 ++ [{ituAlarmProbableCause, ProbableCause}];
+				undefined ->
+					Varbinds1
+			end,
+			Varbinds3 = case AdditionalText of
+				AdditionalText when is_list(AdditionalText) ->
+					Varbinds2 ++ [{ituAlarmAdditionalText, AdditionalText}];
+				undefined ->
+					Varbinds2
+			end,
+			snmpa:send_notification(snmp_master_agent,
+					NotificationId, no_receiver, Varbinds3),
+			ok;
 		{atomic, ok} ->
 			ok;
 		{aborted, Reason} ->
