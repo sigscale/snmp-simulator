@@ -11,6 +11,8 @@ beam_DATA = snmp_simulator_app.beam \
 		snmp_simulator_sup.beam \
 		snmp_simulator_server.beam \
 		snmp_simulator.beam \
+		snmp_simulator_fsm_sup.beam \
+		snmp_simulator_fsm.beam \
 		snmp_simulator_mib.beam \
 		snmp_simulator_import.beam
 

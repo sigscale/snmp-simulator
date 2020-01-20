@@ -7,6 +7,8 @@ modhtml = snmp_simulator_app.html \
 		snmp_simulator_sup.html \
 		snmp_simulator_server.html \
 		snmp_simulator.html \
+		snmp_simulator_fsm_sup.html \
+		snmp_simulator_fsm.html \
 		snmp_simulator_mib.html \
 		snmp_simulator_import.html
 

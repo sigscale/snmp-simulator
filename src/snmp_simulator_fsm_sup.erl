@@ -1,4 +1,4 @@
-%%% snmp_simulator_sup.erl
+%%% snmp_simulator_fsm_sup.erl
 %%% vim: ts=3
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% @copyright 2018-2019 SigScale Global Inc.
@@ -17,7 +17,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% @docfile "{@docsrc supervision.edoc}"
 %%%
--module(snmp_simulator_sup).
+-module(snmp_simulator_fsm_sup).
 -copyright('Copyright (c) 2018-2019 SigScale Global Inc.').
 
 -behaviour(supervisor).
@@ -39,42 +39,24 @@
 %% @private
 %%
 init([] = _Args) ->
-	ChildSpecs = [server(snmp_simulator_server, snmp_simulator, [self()]),
-			supervisor(snmp_simulator_fsm_sup, snmp_simulator_fsm_sup, [])],
-	{ok, {{one_for_one, 10, 60}, ChildSpecs}}.
+	ChildSpecs = [fsm(snmp_simulator_fsm, [])],
+	{ok, {{simple_one_for_one, 10, 60}, ChildSpecs}}.
 
 %%----------------------------------------------------------------------
 %%  internal functions
 %%----------------------------------------------------------------------
 
--spec supervisor(StartMod, RegName, Args) -> Result
+-spec fsm(StartMod, Args) -> Result
 	when
 		StartMod :: atom(),
-		RegName :: atom(),
 		Args :: [term()],
 		Result :: supervisor:child_spec().
 %% @doc Build a supervisor child specification for a
-%% 	{@link //stdlib/supervisor. supervisor} behaviour
-%% 	with registered name.
+%% 	{@link //stdlib/gen_fsm. gen_fsm} behaviour.
 %% @private
 %%
-supervisor(StartMod, RegName, Args) ->
-	StartArgs = [{local, RegName}, StartMod, Args],
-	StartFunc = {supervisor, start_link, StartArgs},
-	{StartMod, StartFunc, permanent, infinity, supervisor, [StartMod]}.
-
--spec server(StartMod, RegName, Args) -> Result
-	when
-		StartMod :: atom(),
-		RegName :: atom(),
-		Args :: [term()],
-		Result :: supervisor:child_spec().
-%% @doc Build a supervisor child specification for a
-%% 	{@link //stdlib/gen_server. gen_server} behaviour.
-%% @private
-%%
-server(StartMod, RegName, Args) ->
-	StartArgs = [{local, RegName}, StartMod, Args, []],
-	StartFunc = {gen_server, start_link, StartArgs},
+fsm(StartMod, Args) ->
+	StartArgs = [StartMod],
+	StartFunc = {gen_fsm, start_link, StartArgs},
 	{StartMod, StartFunc, permanent, 4000, worker, [StartMod]}.
 
