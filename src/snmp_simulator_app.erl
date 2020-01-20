@@ -444,7 +444,8 @@ install11(Nodes, Acc) ->
 %% @hidden
 install12(_Nodes, Acc) ->
 	F = fun() ->
-			mnesia:write({snmp_variables, alarmActiveIndex, 0})
+			mnesia:write({snmp_variables, alarmActiveIndex, 0}),
+			mnesia:write({snmp_variables, alarmModelIndex, 0})
 	end,
 	case mnesia:transaction(F) of
 		{atomic, ok} ->

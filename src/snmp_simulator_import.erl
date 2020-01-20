@@ -36,8 +36,9 @@ import([H | T]) when is_tuple(H) ->
 	GenericModelPointer = AlarmModelNotificationId ++ GenRowIndex,
 	ItuModel2 = ItuModel1#ituAlarmTable{ituAlarmGenericModel = GenericModelPointer},
 	F = fun() ->
-				ok = mnesia:write(GenericModel2),
-				ok = mnesia:write(ItuModel2)
+				mnesia:write(GenericModel2),
+				mnesia:write(ItuModel2),
+				mnesia:write({snmp_variables, alarmModelIndex, Index})
 	end,
 	case mnesia:transaction(F) of
 		{atomic, ok} ->
