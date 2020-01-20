@@ -107,25 +107,28 @@ import() ->
 
 import(Config) ->
 	PrivDir = ?config(priv_dir, Config),
-	Chars = ["{alarmClearState, 2, 1, \"Temperature Normal\", undefined, "
+	Chars = ["{1, alarmClearState, 2, 1, \"Temperature Normal\", undefined, "
 			"alarmActiveResourceId, undefined, clear, environmentalAlarm, "
-			"undefined, undefined}.", $\n,
-			"{alarmActiveState, 2, 4, \"Temperature Low\", undefined, "
+			"lowTemperature, undefined}.", $\n,
+			"{1, alarmActiveState, 2, 4, \"Temperature Low\", undefined, "
 			"alarmActiveResourceId, undefined, minor, environmentalAlarm, "
 			"lowTemperature, undefined}.", $\n,
-			"{alarmActiveState, 2, 5, \"Temperature Low\", undefined, "
+			"{1, alarmActiveState, 2, 5, \"Temperature Low\", undefined, "
 			"alarmActiveResourceId, undefined, major, environmentalAlarm, "
 			"lowTemperature, undefined}.", $\n,
-			"{alarmActiveState, 2, 6, \"Temperature Low\", undefined, "
+			"{1, alarmActiveState, 2, 6, \"Temperature Low\", undefined, "
 			"alarmActiveResourceId, undefined, critical, environmentalAlarm, "
 			"lowTemperature, undefined}.", $\n,
-			"{alarmActiveState, 2, 4, \"Temperature High\", undefined, "
+			"{2, alarmClearState, 2, 1, \"Temperature Normal\", undefined, "
+			"alarmActiveResourceId, undefined, clear, environmentalAlarm, "
+			"highTemperature, undefined}.", $\n,
+			"{2, alarmActiveState, 2, 4, \"Temperature High\", undefined, "
 			"alarmActiveResourceId, undefined, minor, environmentalAlarm, "
 			"highTemperature, undefined}.", $\n,
-			"{alarmActiveState, 2, 5, \"Temperature High\", undefined, "
+			"{2, alarmActiveState, 2, 5, \"Temperature High\", undefined, "
 			"alarmActiveResourceId, undefined, major, environmentalAlarm, "
 			"highTemperature, undefined}.", $\n,
-			"{alarmActiveState, 2, 6, \"Temperature High\", undefined, "
+			"{2, alarmActiveState, 2, 6, \"Temperature High\", undefined, "
 			"alarmActiveResourceId, undefined, critical, environmentalAlarm, "
 			"highTemperature, undefined}.", $\n],
 	ok = file:write_file(PrivDir ++ "/example-alarm-model", Chars),
@@ -144,12 +147,12 @@ import(Config) ->
 			1] = snmp_generic:table_get_elements(AlarmModelTable,
 			Index1, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]),
 	ItuAlarmGenericModel1 = AlarmModelNotificationId ++ Index1,
-	[1, 6, undefined, undefined,
+	[1, 6, 130, undefined,
 			ItuAlarmGenericModel1] = snmp_generic:table_get_elements(ItuAlarmTable,
 			itu_index(Index1), [1, 2, 3, 4, 5]),
 	Index2 = snmp_generic:table_next(AlarmModelTable, Index1),
 	AlarmModelSpecificPointer2 = ItuAlarmEventType ++ itu_index(Index2),
-	[2, 4, AlarmActiveState, 2, 4, "Temperature Low",
+	[1, 4, AlarmActiveState, 2, 4, "Temperature Low",
 			AlarmModelSpecificPointer2, AlarmActiveResourceId, [0,0],
 			1] = snmp_generic:table_get_elements(AlarmModelTable,
 			Index2, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]),
@@ -159,7 +162,7 @@ import(Config) ->
 			itu_index(Index2), [1, 2, 3, 4, 5]),
 	Index3 = snmp_generic:table_next(AlarmModelTable, Index2),
 	AlarmModelSpecificPointer3 = ItuAlarmEventType ++ itu_index(Index3),
-	[3, 5, AlarmActiveState, 2, 5, "Temperature Low",
+	[1, 5, AlarmActiveState, 2, 5, "Temperature Low",
 			AlarmModelSpecificPointer3, AlarmActiveResourceId, [0,0],
 			1] = snmp_generic:table_get_elements(AlarmModelTable,
 			Index3, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]),
@@ -169,7 +172,7 @@ import(Config) ->
 			itu_index(Index3), [1, 2, 3, 4, 5]),
 	Index4 = snmp_generic:table_next(AlarmModelTable, Index3),
 	AlarmModelSpecificPointer4 = ItuAlarmEventType ++ itu_index(Index4),
-	[4, 6, AlarmActiveState, 2, 6, "Temperature Low",
+	[1, 6, AlarmActiveState, 2, 6, "Temperature Low",
 			AlarmModelSpecificPointer4, AlarmActiveResourceId, [0,0],
 			1] = snmp_generic:table_get_elements(AlarmModelTable,
 			Index4, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]),
@@ -179,41 +182,55 @@ import(Config) ->
 			itu_index(Index4), [1, 2, 3, 4, 5]),
 	Index5 = snmp_generic:table_next(AlarmModelTable, Index4),
 	AlarmModelSpecificPointer5 = ItuAlarmEventType ++ itu_index(Index5),
-	[5, 4, AlarmActiveState, 2, 4, "Temperature High",
+	[2, 1, AlarmClearState, 2, 1, "Temperature Normal",
 			AlarmModelSpecificPointer5, AlarmActiveResourceId, [0,0],
 			1] = snmp_generic:table_get_elements(AlarmModelTable,
 			Index5, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]),
 	ItuAlarmGenericModel5 = AlarmModelNotificationId ++ Index5,
-	[5, 6, 123, undefined,
+	[1, 6, 123, undefined,
 			ItuAlarmGenericModel5] = snmp_generic:table_get_elements(ItuAlarmTable,
 			itu_index(Index5), [1, 2, 3, 4, 5]),
 	Index6 = snmp_generic:table_next(AlarmModelTable, Index5),
 	AlarmModelSpecificPointer6 = ItuAlarmEventType ++ itu_index(Index6),
-	[6, 5, AlarmActiveState, 2, 5, "Temperature High",
+	[2, 4, AlarmActiveState, 2, 4, "Temperature High",
 			AlarmModelSpecificPointer6, AlarmActiveResourceId, [0,0],
 			1] = snmp_generic:table_get_elements(AlarmModelTable,
 			Index6, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]),
 	ItuAlarmGenericModel6 = AlarmModelNotificationId ++ Index6,
-	[4, 6, 123, undefined,
+	[5, 6, 123, undefined,
 			ItuAlarmGenericModel6] = snmp_generic:table_get_elements(ItuAlarmTable,
 			itu_index(Index6), [1, 2, 3, 4, 5]),
 	Index7 = snmp_generic:table_next(AlarmModelTable, Index6),
 	AlarmModelSpecificPointer7 = ItuAlarmEventType ++ itu_index(Index7),
-	[7, 6, AlarmActiveState, 2, 6, "Temperature High",
+	[2, 5, AlarmActiveState, 2, 5, "Temperature High",
 			AlarmModelSpecificPointer7, AlarmActiveResourceId, [0,0],
 			1] = snmp_generic:table_get_elements(AlarmModelTable,
 			Index7, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]),
 	ItuAlarmGenericModel7 = AlarmModelNotificationId ++ Index7,
-	[3, 6, 123, undefined,
+	[4, 6, 123, undefined,
 			ItuAlarmGenericModel7] = snmp_generic:table_get_elements(ItuAlarmTable,
-			itu_index(Index7), [1, 2, 3, 4, 5]).
+			itu_index(Index7), [1, 2, 3, 4, 5]),
+	Index8 = snmp_generic:table_next(AlarmModelTable, Index7),
+	AlarmModelSpecificPointer8 = ItuAlarmEventType ++ itu_index(Index8),
+	[2, 6, AlarmActiveState, 2, 6, "Temperature High",
+			AlarmModelSpecificPointer8, AlarmActiveResourceId, [0,0],
+			1] = snmp_generic:table_get_elements(AlarmModelTable,
+			Index8, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]),
+	ItuAlarmGenericModel8 = AlarmModelNotificationId ++ Index8,
+	[3, 6, 123, undefined,
+			ItuAlarmGenericModel8] = snmp_generic:table_get_elements(ItuAlarmTable,
+			itu_index(Index8), [1, 2, 3, 4, 5]).
 
 add_alarm() ->
 	[{userdata, [{doc, "Add an active alarm."}]}].
 
 add_alarm(Config) ->
 	PrivDir = ?config(priv_dir, Config),
-	Chars = ["{alarmActiveState, 2, 4, \"Power Failure\", undefined, "
+	ListName = [],
+	Chars = ["{3, alarmClearState, 2, 1, \"Power Restored\", undefined, "
+			"alarmActiveResourceId, undefined, clear, equipmentAlarm, "
+			"powerProblem, undefined}.", $\n,
+			"{3, alarmActiveState, 2, 4, \"Power Failure\", undefined, "
 			"alarmActiveResourceId, undefined, critical, equipmentAlarm, "
 			"powerProblem, undefined}.", $\n],
 	ok = file:write_file(PrivDir ++ "/power-alarm", Chars),
@@ -221,11 +238,10 @@ add_alarm(Config) ->
 	[{_, EngineID}] = dets:lookup(snmpa_local_db1, snmpEngineID),
 	{value, AlarmActiveState} = snmpa:name_to_oid(alarmActiveState),
 	F1 = fun() ->
-			MatchSpec = [{#alarmModelTable{key = '$1',
-					alarmModelDescription = "Power Failure", _ = '_'}, [], ['$1']}],
-			mnesia:select(alarmModelTable, MatchSpec, read)
+			mnesia:read(alarmModelTable, {ListName, 3, 6}, read)
 	end,
-	{atomic, [{ListName, Index, State} = Model]} = mnesia:transaction(F1),
+	{atomic, [#alarmModelTable{key = {ListName,
+			Index, State} = Model}]} = mnesia:transaction(F1),
 	{value, AlarmModelNotificationId} = snmpa:name_to_oid(alarmModelNotificationId),
 	ModelPointer = AlarmModelNotificationId
 			++ [length(ListName)] ++ ListName ++ [Index, State],
@@ -272,18 +288,20 @@ clear_alarm() ->
 
 clear_alarm(Config) ->
 	PrivDir = ?config(priv_dir, Config),
-	Chars = ["{alarmClearState, 2, 4, \"Power Failure - cleared\", undefined, "
-			"alarmActiveResourceId, undefined, clear, equipmentAlarm, "
-			"undefined, undefined}.", $\n],
-	ok = file:write_file(PrivDir ++ "/power-alarm-cleared", Chars),
-	ok = snmp_simulator_import:file(PrivDir ++ "/power-alarm-cleared"),
+	ListName = [],
+	Chars = ["{4, alarmClearState, 2, 1, \"Signal Restored\", undefined, "
+			"alarmActiveResourceId, undefined, clear, communicationsAlarm, "
+			"lossOfSignal, undefined}.", $\n,
+			"{4, alarmActiveState, 2, 4, \"Loss of Signal (LOS)\", undefined, "
+			"alarmActiveResourceId, undefined, major, communicationsAlarm, "
+			"lossOfSignal, undefined}.", $\n],
+	ok = file:write_file(PrivDir ++ "/los-alarm", Chars),
+	ok = snmp_simulator_import:file(PrivDir ++ "/los-alarm"),
 	F1 = fun() ->
-			MatchSpec = [{#alarmModelTable{key = '$1',
-					alarmModelDescription = "Power Failure", _ = '_'},
-					[], ['$1']}],
-			mnesia:select(alarmModelTable, MatchSpec, read)
+			mnesia:read(alarmModelTable, {ListName, 4, 5}, read)
 	end,
-	{atomic, [{ListName, _, _} = Model]} = mnesia:transaction(F1),
+	{atomic, [#alarmModelTable{key = {ListName,
+			_, _} = Model}]} = mnesia:transaction(F1),
 	{ok, AlarmIndex} = snmp_simulator:add_alarm(Model, resource()),
 	F2 = fun() ->
 			[#alarmActiveStatsTable{alarmActiveStatsActiveCurrent = Current}]
@@ -292,7 +310,7 @@ clear_alarm(Config) ->
 	end,
 	{atomic, ActiveCurrent1} = mnesia:transaction(F2),
 	F3 = fun() ->
-			[#ituAlarmActiveStatsTable{ituAlarmActiveStatsCriticalCurrent = Current}]
+			[#ituAlarmActiveStatsTable{ituAlarmActiveStatsMajorCurrent = Current}]
 					= mnesia:read(ituAlarmActiveStatsTable, ListName, read),
 			Current
 	end,
