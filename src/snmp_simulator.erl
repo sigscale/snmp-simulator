@@ -91,7 +91,7 @@ add_alarm({ListName, Index, State} = Model, Resource, Varbinds)
 	{value, AlarmModelNotificationId} = snmpa:name_to_oid(alarmModelNotificationId),
 	DateTime = datetime(),
 	F = fun() ->
-			[#alarmModelTable{alarmModelNotificationId = Notification,
+			[#alarmModelTable{alarmModelNotificationId = NotificationId,
 					alarmModelSpecificPointer = SpecificPointer,
 					alarmModelDescription = Description}]
 					= mnesia:read(alarmModelTable, Model, read),
@@ -120,7 +120,7 @@ add_alarm({ListName, Index, State} = Model, Resource, Varbinds)
 					alarmActiveEngineAddress = EngineAddress,
 					alarmActiveContextName = "",
 					alarmActiveVariables = length(Varbinds),
-					alarmActiveNotificationID = Notification,
+					alarmActiveNotificationID = NotificationId,
 					alarmActiveResourceId = Resource,
 					alarmActiveDescription = Description,
 					alarmActiveModelPointer = ModelPointer,
@@ -165,11 +165,13 @@ add_alarm({ListName, Index, State} = Model, Resource, Varbinds)
 					mnesia:write(S2#ituAlarmActiveStatsTable{ituAlarmActiveStatsWarningCurrent = Current2 + 1,
 							ituAlarmActiveStatsWarnings = Total2 + 1})
 			end,
-			{Key, ModelPointer, Description, PerceivedSeverity, EventType, ProbableCause, AdditionalText}
+			{NotificationId, Key, ModelPointer, Description, PerceivedSeverity,
+					EventType, ProbableCause, AdditionalText}
 	end,
 	case mnesia:transaction(F) of
-		{atomic, {AlarmIndex, ModelPointer, Description, PerceivedSeverity,
-				EventType, ProbableCause, AdditionalText}} ->
+		{atomic, {NotificationId, AlarmIndex, ModelPointer, Description,
+				PerceivedSeverity, EventType, ProbableCause, AdditionalText}} ->
+			{_, Notification} = snmpa:oid_to_name(NotificationId),
 			Varbinds1 = [{alarmActiveModelPointer, ModelPointer},
 					{alarmActiveResourceId, Resource},
 					{alarmActiveDescription, Description},
@@ -188,7 +190,7 @@ add_alarm({ListName, Index, State} = Model, Resource, Varbinds)
 					Varbinds2
 			end,
 			snmpa:send_notification(snmp_master_agent,
-					alarmActiveState, no_receiver, Varbinds3),
+					Notification, no_receiver, Varbinds3),
 			{ok, AlarmIndex};
 		{aborted, Reason} ->
 			{error, Reason}
@@ -265,6 +267,7 @@ clear_alarm({ListName, DateAndTime, Index} = AlarmIndex)
 	case mnesia:transaction(F) of
 		{atomic, {NotificationId, ModelPointer, Resource, Description,
 				EventType, ProbableCause, AdditionalText}} ->
+			{_, Notification} = snmpa:oid_to_name(NotificationId),
 			Varbinds1 = [{alarmActiveModelPointer, ModelPointer},
 					{alarmActiveResourceId, Resource},
 					{alarmActiveDescription, Description},
@@ -283,7 +286,7 @@ clear_alarm({ListName, DateAndTime, Index} = AlarmIndex)
 					Varbinds2
 			end,
 			snmpa:send_notification(snmp_master_agent,
-					NotificationId, no_receiver, Varbinds3),
+					Notification, no_receiver, Varbinds3),
 			ok;
 		{atomic, ok} ->
 			ok;
