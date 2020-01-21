@@ -39,23 +39,22 @@
 %% @private
 %%
 init([] = _Args) ->
-	ChildSpecs = [fsm(snmp_simulator_fsm, [])],
+	ChildSpecs = [fsm(snmp_simulator_fsm)],
 	{ok, {{simple_one_for_one, 10, 60}, ChildSpecs}}.
 
 %%----------------------------------------------------------------------
 %%  internal functions
 %%----------------------------------------------------------------------
 
--spec fsm(StartMod, Args) -> Result
+-spec fsm(StartMod) -> Result
 	when
 		StartMod :: atom(),
-		Args :: [term()],
 		Result :: supervisor:child_spec().
 %% @doc Build a supervisor child specification for a
 %% 	{@link //stdlib/gen_fsm. gen_fsm} behaviour.
 %% @private
 %%
-fsm(StartMod, Args) ->
+fsm(StartMod) ->
 	StartArgs = [StartMod],
 	StartFunc = {gen_fsm, start_link, StartArgs},
 	{StartMod, StartFunc, permanent, 4000, worker, [StartMod]}.
