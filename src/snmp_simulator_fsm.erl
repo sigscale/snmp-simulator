@@ -96,8 +96,7 @@ init(_Args) ->
 %% @@see //stdlib/gen_fsm:StateName/2
 %% @private
 %%
-transaction(timeout,
-		#statedata{active = MaxActive, prefix = Prefix} = StateData) ->
+transaction(timeout, #statedata{active = MaxActive} = StateData) ->
 	Start = erlang:system_time(?MILLISECOND),
 	case mnesia:ets(fun() ->
 			mnesia:read(alarmActiveStatsTable, [], read) end) of
@@ -240,7 +239,15 @@ resource(#statedata{prefix = Prefix, active = Active}) ->
 %% @hidden
 timeout(Start, #statedata{mean = Mean, deviation = Deviation}) ->
 	End = erlang:system_time(?MILLISECOND),
-	Interval = (1000 div Mean) - (End - Start),
-	Range = (Interval * Deviation) div 100,
-	Interval + (rand:uniform(Range * 2) - Range).
+	case (1000 div Mean) - (End - Start) of
+		Interval when Interval > 0 ->
+			case (Interval * Deviation) div 100 of
+				Range when Range > 0 ->
+					Interval + (rand:uniform(Range * 2) - Range);
+				_Range ->
+					0
+			end;
+		_Interval ->
+			0
+	end.
 
