@@ -34,7 +34,7 @@ The following command will initialize {@link //snmp_simulator. snmp_simulator}.
 When started with default configuration the
 {@link //snmp_simulator. snmp_simulator} application will not be running
 any workers. An alarm model must be imported, as described below, before
-Workers should be started. Workers may be added dynamically with:
+workers may be started. Workers may be added dynamically with:
 
 ```
 1> snmp_simulator:add_worker(1).
@@ -44,9 +44,16 @@ ok
 Each worker shall add or clear an alarm in the active alarm table at a
 rate determined by the application environment variables `mean' and
 `deviation'. The target size of the active alarm table is set with `active'.
-Alarms are added until the target size is reached after which an alarmm
+Alarms are added until the target size is reached after which an alarm
 will be cleared from the table before another may be added. Each change to
 the table causes an SNMP notification to be sent.
+
+Workers perform an add, or if table is full a clear, and then calculate the
+amount of time to wait before starting the next operation. The interval is
+the quotient of target `mean' per second. The amount of time spent processing
+the current request is subtracted from the interval time so workers adapt to
+processing load. If the target is too high a worker will use a timeout of
+zero and run continuously.
 
 ==Configuration==
 Configuring the {@link //snmp_simulator. snmp_simulator} application consists
