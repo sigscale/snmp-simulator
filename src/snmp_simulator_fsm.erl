@@ -73,11 +73,17 @@ init(_Args) ->
 	{ok, Mean} = application:get_env(mean),
 	{ok, Deviation} = application:get_env(deviation),
 	{ok, Prefix} = application:get_env(prefix),
-	[{_, _, Alarms}] = mnesia:ets(fun() ->
-			mnesia:read(snmp_variables, alarmModelIndex, read) end),
-	{ok, transaction, #statedata{active = Active, mean = Mean,
-			deviation = Deviation, alarms = Alarms,
-			prefix = prefix(Prefix)}, rand:uniform(4000)}.
+	F = fun() ->
+			mnesia:read(snmp_variables, alarmModelIndex, read)
+	end,
+	case mnesia:transaction(F) of
+		{atomic, [{_, _, Alarms}]} ->
+			{ok, transaction, #statedata{active = Active, mean = Mean,
+					deviation = Deviation, alarms = Alarms,
+					prefix = prefix(Prefix)}, rand:uniform(4000)};
+		{aborted, Reason} ->
+			{stop, Reason}
+	end.
 
 -spec transaction(Event, StateData) -> Result
 	when
@@ -98,16 +104,25 @@ init(_Args) ->
 %%
 transaction(timeout, #statedata{active = MaxActive} = StateData) ->
 	Start = erlang:system_time(?MILLISECOND),
-	case mnesia:ets(fun() ->
-			mnesia:read(alarmActiveStatsTable, [], read) end) of
-		[#alarmActiveStatsTable{alarmActiveStatsActiveCurrent = Active}]
+	F = fun() ->
+			mnesia:read(alarmActiveStatsTable, [], read)
+	end,
+	case mnesia:transaction(F) of
+		{atomic, [#alarmActiveStatsTable{alarmActiveStatsActiveCurrent = Active}]}
 				when Active < MaxActive ->
-			snmp_simulator:add_alarm(model(StateData), resource(StateData)),
-			{next_state, transaction, StateData, timeout(Start, StateData)};
-		[#alarmActiveStatsTable{}] ->
+			case model(StateData) of
+				{ok, Model} ->
+					snmp_simulator:add_alarm(Model, resource(StateData)),
+					{next_state, transaction, StateData, timeout(Start, StateData)};
+				{error, Reason} ->
+					{stop, Reason, StateData}
+			end;
+		{atomic, [#alarmActiveStatsTable{}]} ->
 			{ok, AlarmIndex} = mnesia:snmp_get_next_index(alarmActiveTable, []),
 			snmp_simulator:clear_alarm(AlarmIndex),
-			{next_state, transaction, StateData, timeout(Start, StateData)}
+			{next_state, transaction, StateData, timeout(Start, StateData)};
+		{aborted, Reason} ->
+			{stop, Reason, StateData}
 	end.
 
 -spec handle_event(Event, StateName, StateData) -> Result
@@ -222,20 +237,47 @@ prefix([H | T], Acc) when is_list(H) ->
 prefix([], Acc) ->
 	lists:reverse(Acc).
 
+-spec model(StateData) -> Result
+	when
+		StateData :: #statedata{},
+		Result :: {ok, Model} | {error, Reason},
+		Model :: snmpa:oid(),
+		Reason :: term().
+%% @doc Randomly choose an alarm model.
 %% @hidden
 model(#statedata{alarms = Alarms}) ->
 	N = rand:uniform(Alarms),
-	Keys = mnesia:ets(fun() ->
+	F = fun() ->
 			MatchSpec = [{#alarmModelTable{key = '$1', _ = '_'},
 					[{'=:=', {element, 2, '$1'}, N},
 					{'>', {element, 3, '$1'}, 1}], ['$1']}],
-			mnesia:select(alarmModelTable, MatchSpec, read) end),
-	lists:nth(rand:uniform(length(Keys)), Keys).
+			mnesia:select(alarmModelTable, MatchSpec, read)
+	end,
+	case mnesia:transaction(F) of
+		{atomic, Keys} ->
+			{ok, lists:nth(rand:uniform(length(Keys)), Keys)};
+		{aborted, Reason} ->
+			{error, Reason}
+	end.
 
+-spec resource(StateData) -> Resource
+	when
+		StateData :: #statedata{},
+		Resource :: snmpa:oid().
+%% @doc Returns a resource OID with one of the configured
+%% 	prefixes and a random index.
 %% @hidden
 resource(#statedata{prefix = Prefix, active = Active}) ->
 	lists:nth(rand:uniform(length(Prefix)), Prefix) ++ [rand:uniform(Active)].
 
+-spec timeout(Start, StateData) -> Timeout
+	when
+		Start :: pos_integer(),
+		StateData :: #statedata{},
+		Timeout :: pos_integer().
+%% @doc Returns a timeout taking into account the time it took to
+%% 	process the current transaction, the configured `mean' rate
+%% 	and random `deviation' percentage.
 %% @hidden
 timeout(Start, #statedata{mean = Mean, deviation = Deviation}) ->
 	End = erlang:system_time(?MILLISECOND),
