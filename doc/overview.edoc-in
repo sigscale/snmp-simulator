@@ -31,11 +31,47 @@ The following command will initialize {@link //snmp_simulator. snmp_simulator}.
    '''
 
 ==Operation==
-TBD
+When started with default configuration the
+{@link //snmp_simulator. snmp_simulator} application will not be running
+any workers. An alarm model must be imported, as described below, before
+Workers should be started. Workers may be added dynamically with:
+
+```
+1> snmp_simulator:add_worker(1).
+ok
+'''
+
+Each worker shall add or clear an alarm in the active alarm table at a
+rate determined by the application environment variables `mean' and
+`deviation'. The target size of the active alarm table is set with `active'.
+Alarms are added until the target size is reached after which an alarmm
+will be cleared from the table before another may be added. Each change to
+the table causes an SNMP notification to be sent.
 
 ==Configuration==
 Configuring the {@link //snmp_simulator. snmp_simulator} application consists
-of defining an alarm model and configuration of the SNMP agent.
+of defining an alarm model, configuration of the SNMP agent and setting the
+alarm generation parameters used by workers.
+
+===Alarm Generation===
+The simulator workers are configured by setting application environment
+variables in the system configuration file (`sys.config'). An example
+clause for {@link snmp_simulator. snmp_simulator} application is:
+
+```
+{snmp_simulator,
+		[{worker, 1},
+		{mean, 25},
+		{deviation, 20},
+		{active, 1000},
+		{prefix, [ifIndex]}]}
+'''
+
+In the above example `1' worker is started which generates an average
+of `25' alarms per second with actual rate randomly deviated by `20%'.
+The target size of the active alarm table is `1000'. The alarmed resource
+identified has the OID prefix named `ifIndex' and a random index value
+suffix.
 
 ===Alarm Model===
 Am alarm model defines how alarms are represented in the agent. An entry in

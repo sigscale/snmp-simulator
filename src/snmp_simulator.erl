@@ -23,6 +23,7 @@
 
 %% export the snmp_simulator  public API
 -export([add_alarm/2, add_alarm/3, clear_alarm/1]).
+-export([add_worker/1]).
 -export([datetime/0, iso8601/1]).
 
 -include("snmp_simulator.hrl").
@@ -293,6 +294,28 @@ clear_alarm({ListName, DateAndTime, Index} = AlarmIndex)
 		{aborted, Reason} ->
 			{error, Reason}
 	end.
+
+-spec add_worker(N) -> Result
+	when
+		N :: pos_integer(),
+		Result :: ok | {error, Reason},
+		Reason :: term().
+%% @doc Add alarm generation workers.
+%%
+%% 	Each worker adds and clears active alarms at the
+%% 	rate determined by application environment variables
+%% 	`mean' and `deviation' so that the total traffic
+%% 	generated is multiplied by the number of workers.
+%%
+add_worker(N) when is_integer(N), N > 0 ->
+	case supervisor:start_child(snmp_simulator_fsm_sup, [[], []]) of
+		{ok, _Child} ->
+			add_worker(N - 1);
+		{error, Reason} ->
+			{error, Reason}
+	end;
+add_worker(0) ->
+	ok.
 
 -spec datetime() -> DateTime
 	when

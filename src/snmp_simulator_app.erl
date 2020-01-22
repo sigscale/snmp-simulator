@@ -118,6 +118,15 @@ start4() ->
 start5() ->
 	case supervisor:start_link(snmp_simulator_sup, []) of
 		{ok, TopSup} ->
+			start6(TopSup);
+		{error, Reason} ->
+			{error, Reason}
+	end.
+%% @hidden
+start6(TopSup) ->
+	{ok, N} = application:get_env(worker),
+	case snmp_simulator:add_worker(N) of
+		ok ->
 			{ok, TopSup};
 		{error, Reason} ->
 			{error, Reason}
