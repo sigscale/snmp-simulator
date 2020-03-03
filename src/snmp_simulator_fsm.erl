@@ -77,7 +77,7 @@ init(_Args) ->
 			mnesia:read(snmp_variables, alarmModelIndex, read)
 	end,
 	case mnesia:transaction(F) of
-		{atomic, [{_, _, Alarms}]} when is_integer(Alarms) ->
+		{atomic, [{_, _, Alarms}]} when is_integer(Alarms), Alarms > 0 ->
 			{ok, transaction, #statedata{active = Active, mean = Mean,
 					deviation = Deviation, alarms = Alarms,
 					prefix = prefix(Prefix)}, rand:uniform(4000)};
@@ -245,7 +245,8 @@ prefix([], Acc) ->
 		Reason :: term().
 %% @doc Randomly choose an alarm model.
 %% @hidden
-model(#statedata{alarms = Alarms}) when is_integer(Alarms) ->
+model(#statedata{alarms = Alarms})
+		`when is_integer(Alarms), Alarms > 0 ->
 	N = rand:uniform(Alarms),
 	F = fun() ->
 			MatchSpec = [{#alarmModelTable{key = '$1', _ = '_'},
