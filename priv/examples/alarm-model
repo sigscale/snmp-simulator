@@ -1,0 +1,14 @@
+%%% {AlarmIndex, NotificationId, VarbindIndex, VarbindValue, Description,
+%%%         SpecificPointer, VarbindSubtree, ResourcePrefix,
+%%%         PerceivedSeverity, EventType, ProbableCause, AdditionalText}.
+%%%
+{1, alarmClearState, 2, 1, "Temperature Normal", undefined, alarmActiveResourceId, undefined, clear, environmentalAlarm, lowTemperature, undefined}.
+{1, alarmActiveState, 2, 4, "Temperature Low", undefined, alarmActiveResourceId, undefined, minor, environmentalAlarm, lowTemperature, undefined}.
+{1, alarmActiveState, 2, 5, "Temperature Low", undefined, alarmActiveResourceId, undefined, major, environmentalAlarm, lowTemperature, undefined}.
+{1, alarmActiveState, 2, 6, "Temperature Low", undefined, alarmActiveResourceId, undefined, critical, environmentalAlarm, lowTemperature, undefined}.
+{2, alarmClearState, 2, 1, "Temperature Normal", undefined, alarmActiveResourceId, undefined, clear, environmentalAlarm, highTemperature, undefined}.
+{2, alarmActiveState, 2, 4, "Temperature High", undefined, alarmActiveResourceId, undefined, minor, environmentalAlarm, highTemperature, undefined}.
+{2, alarmActiveState, 2, 5, "Temperature High", undefined, alarmActiveResourceId, undefined, major, environmentalAlarm, highTemperature, undefined}.
+{2, alarmActiveState, 2, 6, "Temperature High", undefined, alarmActiveResourceId, undefined, critical, environmentalAlarm, highTemperature, undefined}.
+{3, alarmClearState, 2, 4, "Power Restored", undefined, alarmActiveResourceId, undefined, clear, equipmentAlarm, powerProblem, undefined}.
+{3, alarmActiveState, 2, 4, "Power Failure", undefined, alarmActiveResourceId, undefined, critical, equipmentAlarm, powerProblem, undefined}.
