@@ -9,6 +9,7 @@ emib_DATA = ITU-ALARM-TC-MIB.bin \
 		IANA-ITU-ALARM-TC-MIB.bin \
 		IANAifType-MIB.bin \
 		IF-MIB.bin \
+		ENTITY-MIB.bin \
 		RMON-MIB.bin \
 		RMON2-MIB.bin \
 		ALARM-MIB.bin \

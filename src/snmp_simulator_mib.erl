@@ -119,5 +119,5 @@ alarm_model_table(Operation, RowIndex, Columns) ->
 mibs() ->
 	["ALARM-MIB", "ITU-ALARM-MIB", "IANA-ITU-ALARM-TC-MIB",
 			"ITU-ALARM-TC-MIB", "IANAifType-MIB", "IF-MIB",
-			"RMON-MIB", "RMON2-MIB"].
+			"ENTITY-MIB", "RMON-MIB", "RMON2-MIB"].
 

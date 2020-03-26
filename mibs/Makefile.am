@@ -7,6 +7,7 @@ mibs_DATA = ITU-ALARM-TC-MIB.mib \
 		IANA-ITU-ALARM-TC-MIB.mib \
 		IANAifType-MIB.mib \
 		IF-MIB.mib \
+		ENTITY-MIB.mib \
 		RMON-MIB.mib \
 		RMON2-MIB.mib \
 		ALARM-MIB.mib \
@@ -24,6 +25,8 @@ check_DATA = .tree_ok
 			-m +IANAifType-MIB  -Lo -Tp -IR ianaifType; \
 		snmptranslate -M +$(top_srcdir)/mibs \
 			-m +IF-MIB -Lo -Tp -IR ifMIB; \
+		snmptranslate -M +$(top_srcdir)/mibs \
+			-m +ENTITY-MIB -Lo -Tp -IR ifMIB; \
 		snmptranslate -M +$(top_srcdir)/mibs \
 			-m +RMON-MIB -Lo -Tp -IR rmonMibModule; \
 		snmptranslate -M +$(top_srcdir)/mibs \

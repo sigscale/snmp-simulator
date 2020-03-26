@@ -98,6 +98,7 @@ init_per_suite(Config) ->
 	ok = snmpm:load_mib(MibDir ++ "IANA-ITU-ALARM-TC-MIB"),
 	ok = snmpm:load_mib(MibDir ++ "IANAifType-MIB"),
 	ok = snmpm:load_mib(MibDir ++ "IF-MIB"),
+	ok = snmpm:load_mib(MibDir ++ "ENTITY-MIB"),
 	ok = snmpm:load_mib(MibDir ++ "ITU-ALARM-MIB"),
 	ok = snmpm:load_mib(MibDir ++ "ITU-ALARM-TC-MIB"),
 	ok = snmpm:load_mib(MibDir ++ "RMON-MIB"),
