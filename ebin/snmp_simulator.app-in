@@ -18,6 +18,6 @@
 			{worker, 0},
 			{mean, 25},
 			{deviation, 100},
-			{prefix, [ifIndex]}]},
+			{prefix, [ifIndex, entPhysicalClass]}]},
 	{mod, {snmp_simulator_app, []}}]}.
 

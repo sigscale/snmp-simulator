@@ -269,7 +269,7 @@ model(#statedata{alarms = Alarms})
 %% 	prefixes and a random index.
 %% @hidden
 resource(#statedata{prefix = Prefix, active = Active}) ->
-	lists:nth(rand:uniform(length(Prefix)), Prefix) ++ [rand:uniform(Active)].
+	lists:nth(rand:uniform(length(Prefix)), Prefix) ++ [rand:uniform(12)].
 
 -spec timeout(Start, StateData) -> Timeout
 	when
