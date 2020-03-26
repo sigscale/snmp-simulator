@@ -246,7 +246,7 @@ prefix([], Acc) ->
 %% @doc Randomly choose an alarm model.
 %% @hidden
 model(#statedata{alarms = Alarms})
-		`when is_integer(Alarms), Alarms > 0 ->
+		when is_integer(Alarms), Alarms > 0 ->
 	N = rand:uniform(Alarms),
 	F = fun() ->
 			MatchSpec = [{#alarmModelTable{key = '$1', _ = '_'},
