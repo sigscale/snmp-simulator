@@ -246,7 +246,7 @@ prefix([], Acc) ->
 %% @doc Randomly choose an alarm model.
 %% @hidden
 model(#statedata{alarms = Alarms})
-		`when is_integer(Alarms), Alarms > 0 ->
+		when is_integer(Alarms), Alarms > 0 ->
 	N = rand:uniform(Alarms),
 	F = fun() ->
 			MatchSpec = [{#alarmModelTable{key = '$1', _ = '_'},
@@ -269,7 +269,7 @@ model(#statedata{alarms = Alarms})
 %% 	prefixes and a random index.
 %% @hidden
 resource(#statedata{prefix = Prefix, active = Active}) ->
-	lists:nth(rand:uniform(length(Prefix)), Prefix) ++ [rand:uniform(Active)].
+	lists:nth(rand:uniform(length(Prefix)), Prefix) ++ [rand:uniform(12)].
 
 -spec timeout(Start, StateData) -> Timeout
 	when
