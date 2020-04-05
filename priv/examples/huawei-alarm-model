@@ -1,0 +1,46 @@
+%%% {AlarmIndex, NotificationId, VarbindIndex, VarbindValue, Description,
+%%%         SpecificPointer, VarbindSubtree, ResourcePrefix,
+%%%         PerceivedSeverity, EventType, 1024, AdditionalText}.
+%%%
+
+{1, alarmActiveState, 2, 3, "Veritas Resources Are Faulty", undefined, [1,3,6,1,4,1,2011,2,15,2,4,3,3,1], undefined, critical, securityServiceOrMechanismViolation, 1024, undefined}.
+{1, alarmClearState, 2, 3, "Veritas Resources Are Faulty", undefined, [1,3,6,1,4,1,2011,2,15,2,4,3,3,1], undefined, clear, securityServiceOrMechanismViolation, 1024, undefined}.
+{2, alarmActiveState, 2, 2, "Veritas replication buffer exceeds the threshold", undefined, [1,3,6,1,4,1,2011,2,15,2,4,3,3,1], undefined, critical, securityServiceOrMechanismViolation, 1024, undefined}.
+{2, alarmClearState, 2, 2, "Veritas replication buffer exceeds the threshold", undefined, [1,3,6,1,4,1,2011,2,15,2,4,3,3,1], undefined, clear, securityServiceOrMechanismViolation, 1024, undefined}.
+{3, alarmActiveState, 2, 4, "The Disk Usage Is Too High (Major)", undefined, [1,3,6,1,4,1,2011,2,15,2,4,3,3,1], undefined, major, qualityOfServiceAlarm, 1024, undefined}.
+{3, alarmClearState, 2, 4, "The Disk Usage Is Too High (Major)", undefined, [1,3,6,1,4,1,2011,2,15,2,4,3,3,1], undefined, clear, qualityOfServiceAlarm, 1024, undefined}.
+{4, alarmActiveState, 2, 5, "Avalanche alarm", undefined, [1,3,6,1,4,1,2011,2,15,2,4,3,3,1], undefined, critical, processingErrorAlarm, 1024, undefined}.
+{4, alarmClearState, 2, 5, "Avalanche alarm", undefined, [1,3,6,1,4,1,2011,2,15,2,4,3,3,1], undefined, clear, processingErrorAlarm, 1024, undefined}.
+{5, alarmActiveState, 2, 3, "Trap Storm Occurs", undefined, [1,3,6,1,4,1,2011,2,15,2,4,3,3,1], undefined, critical, qualityOfServiceAlarm, 1024, undefined}.
+{5, alarmClearState, 2, 3, "Trap Storm Occurs", undefined, [1,3,6,1,4,1,2011,2,15,2,4,3,3,1], undefined, clear, qualityOfServiceAlarm, 1024, undefined}.
+{6, alarmActiveState, 2, 2, "OSS Service Is Attacked", undefined, [1,3,6,1,4,1,2011,2,15,2,4,3,3,1], undefined, critical, securityServiceOrMechanismViolation, 1024, undefined}.
+{6, alarmClearState, 2, 2, "OSS Service Is Attacked", undefined, [1,3,6,1,4,1,2011,2,15,2,4,3,3,1], undefined, clear, securityServiceOrMechanismViolation, 1024, undefined}.
+{7, alarmActiveState, 2, 4, "Power Failure", undefined, [1,3,6,1,4,1,2011,2,15,2,4,3,3,1], undefined, critical, environmentalAlarm, 1024, undefined}.
+{7, alarmClearState, 2, 4, "Power Failure", undefined, [1,3,6,1,4,1,2011,2,15,2,4,3,3,1], undefined, clear, environmentalAlarm, 1024, undefined}.
+{8, alarmActiveState, 2, 5, "Loss of signal", undefined, [1,3,6,1,4,1,2011,2,15,2,4,3,3,1], undefined, critical, communicationsAlarm, 1024, undefined}.
+{8, alarmClearState, 2, 5, "Loss of signal", undefined, [1,3,6,1,4,1,2011,2,15,2,4,3,3,1], undefined, clear, communicationsAlarm, 1024, undefined}.
+{9, alarmActiveState, 2, 3, "Input power abnormal",  undefined, [1,3,6,1,4,1,2011,2,15,2,4,3,3,1], undefined, major, communicationsAlarm, 1024, undefined}.
+{9, alarmClearState, 2, 2, "Input power abnormal",  undefined, [1,3,6,1,4,1,2011,2,15,2,4,3,3,1], undefined, clear, communicationsAlarm, 1024, undefined}.
+{10, alarmActiveState, 2, 4, "Received synchronous loss", undefined, [1,3,6,1,4,1,2011,2,15,2,4,3,3,1], undefined, critical, communicationsAlarm, 1024, undefined}. 
+{10, alarmClearState, 2, 5, "Received synchronous loss", undefined, [1,3,6,1,4,1,2011,2,15,2,4,3,3,1], undefined, clear, communicationsAlarm, 1024, undefined}. 
+{11, alarmActiveState, 2, 3, "Only one pump card is working", undefined, [1,3,6,1,4,1,2011,2,15,2,4,3,3,1], undefined, major, equipmentAlarm, 1024, undefined}.
+{11, alarmClearState, 2, 2, "Only one pump card is working", undefined, [1,3,6,1,4,1,2011,2,15,2,4,3,3,1], undefined, clear, equipmentAlarm, 1024, undefined}.
+{12, alarmActiveState, 2, 4, "Loss of continuity failure defect", undefined, [1,3,6,1,4,1,2011,2,15,2,4,3,3,1], undefined, minor, communicationsAlarm, 1024, undefined}.
+{12, alarmClearState, 2, 5, "Loss of continuity failure defect", undefined, [1,3,6,1,4,1,2011,2,15,2,4,3,3,1], undefined, clear, communicationsAlarm, 1024, undefined}.
+{13, alarmActiveState, 2, 3, "Communication with the device failed", undefined, [1,3,6,1,4,1,2011,2,15,2,4,3,3,1], undefined, critical, equipmentAlarm, 1024, undefined}.
+{13, alarmClearState, 2, 2, "Communication with the device failed", undefined, [1,3,6,1,4,1,2011,2,15,2,4,3,3,1], undefined, clear, equipmentAlarm, 1024, undefined}.
+{14, alarmActiveState, 2, 4, "The Second 68V Power fault", undefined, [1,3,6,1,4,1,2011,2,15,2,4,3,3,1], undefined, minor, equipmentAlarm, 1024, undefined}.
+{14, alarmClearState, 2, 5, "The Second 68V Power fault", undefined, [1,3,6,1,4,1,2011,2,15,2,4,3,3,1], undefined, clear, equipmentAlarm, 1024, undefined}.
+{15, alarmActiveState, 2 ,3, "The ambient temperature for the board is too high", undefined, [1,3,6,1,4,1,2011,2,15,2,4,3,3,1], undefined, major, environmentalAlarm, 1024, undefined}.
+{15, alarmClearState, 2 ,3, "The ambient temperature for the board is too high", undefined, [1,3,6,1,4,1,2011,2,15,2,4,3,3,1], undefined, clear, environmentalAlarm, 1024, undefined}.
+{16, alarmActiveState, 2, 4, "The loss of frame (LOF) occurs at the ONT", undefined, [1,3,6,1,4,1,2011,2,15,2,4,3,3,1], undefined, warning, qualityOfServiceAlarm, 1024, undefined}.
+{16, alarmClearState, 2, 5, "The loss of frame (LOF) occurs at the ONT", undefined, [1,3,6,1,4,1,2011,2,15,2,4,3,3,1], undefined, clear, qualityOfServiceAlarm, 1024, undefined}.
+{17, alarmActiveState, 2, 3, "RPU Temperature Too High Alarm", undefined, [1,3,6,1,4,1,2011,2,15,2,4,3,3,1], undefined, critical, environmentalAlarm, 1024, undefined}.
+{17, alarmClearState, 2, 2, "RPU Temperature Too High Alarm", undefined, [1,3,6,1,4,1,2011,2,15,2,4,3,3,1], undefined, clear, environmentalAlarm, 1024, undefined}.
+{18, alarmActiveState, 2, 4, "Fan Invalid or Plugged out Alarm", undefined, [1,3,6,1,4,1,2011,2,15,2,4,3,3,1], undefined, critical, equipmentAlarm, 1024, undefined}.
+{18, alarmClearState, 2, 4, "Fan Invalid or Plugged out Alarm", undefined, [1,3,6,1,4,1,2011,2,15,2,4,3,3,1], undefined, clear, equipmentAlarm, 1024, undefined}.
+{19, alarmActiveState, 2, 5, "Clock Board Hardware Failure Alarm", undefined, [1,3,6,1,4,1,2011,2,15,2,4,3,3,1], undefined, critical, equipmentAlarm, 1024, undefined}.
+{19, alarmClearState, 2, 5, "Clock Board Hardware Failure Alarm", undefined, [1,3,6,1,4,1,2011,2,15,2,4,3,3,1], undefined, clear, equipmentAlarm, 1024, undefined}.
+{20, alarmActiveState, 2, 3, "Dry Power Status Abnormal Alarm", undefined, [1,3,6,1,4,1,2011,2,15,2,4,3,3,1], undefined, critical, equipmentAlarm, 1024, undefined}.
+{20, alarmClearState, 2, 2, "Dry Power Status Abnormal Alarm", undefined, [1,3,6,1,4,1,2011,2,15,2,4,3,3,1], undefined, clear, equipmentAlarm, 1024, undefined}.
+
